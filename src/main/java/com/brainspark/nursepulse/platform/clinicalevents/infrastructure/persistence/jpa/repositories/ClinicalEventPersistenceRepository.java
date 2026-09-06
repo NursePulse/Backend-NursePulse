@@ -4,6 +4,7 @@ import com.brainspark.nursepulse.platform.clinicalevents.infrastructure.persiste
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -12,4 +13,7 @@ import java.util.List;
 @Repository
 public interface ClinicalEventPersistenceRepository extends JpaRepository<ClinicalEventPersistenceEntity, Long> {
     List<ClinicalEventPersistenceEntity> findByPatientId(Long patientId);
+
+    List<ClinicalEventPersistenceEntity> findByPatientIdAndOccurredAtBetween(
+            Long patientId, LocalDateTime from, LocalDateTime to);
 }

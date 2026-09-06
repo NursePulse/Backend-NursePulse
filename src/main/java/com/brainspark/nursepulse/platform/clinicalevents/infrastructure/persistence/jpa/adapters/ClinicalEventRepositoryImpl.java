@@ -6,6 +6,7 @@ import com.brainspark.nursepulse.platform.clinicalevents.infrastructure.persiste
 import com.brainspark.nursepulse.platform.clinicalevents.infrastructure.persistence.jpa.repositories.ClinicalEventPersistenceRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -30,6 +31,13 @@ public class ClinicalEventRepositoryImpl implements ClinicalEventRepository {
     @Override
     public List<ClinicalEvent> findByPatientId(Long patientId) {
         return clinicalEventPersistenceRepository.findByPatientId(patientId).stream()
+                .map(ClinicalEventPersistenceAssembler::toDomainFromPersistence)
+                .toList();
+    }
+
+    @Override
+    public List<ClinicalEvent> findByPatientIdAndDateRange(Long patientId, LocalDateTime from, LocalDateTime to) {
+        return clinicalEventPersistenceRepository.findByPatientIdAndOccurredAtBetween(patientId, from, to).stream()
                 .map(ClinicalEventPersistenceAssembler::toDomainFromPersistence)
                 .toList();
     }

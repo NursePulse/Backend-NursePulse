@@ -28,6 +28,9 @@ public class ClinicalEventQueryServiceImpl implements ClinicalEventQueryService 
 
     @Override
     public List<ClinicalEvent> handle(GetClinicalEventsByPatientIdQuery query) {
+        if (query.from() != null && query.to() != null) {
+            return clinicalEventRepository.findByPatientIdAndDateRange(query.patientId(), query.from(), query.to());
+        }
         return clinicalEventRepository.findByPatientId(query.patientId());
     }
 }

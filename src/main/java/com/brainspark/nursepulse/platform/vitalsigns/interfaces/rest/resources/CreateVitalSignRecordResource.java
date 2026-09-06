@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 public record CreateVitalSignRecordResource(
         @NotNull Long patientId,
-        @NotNull Long nurseId,
 
         @NotNull
         @Min(20)

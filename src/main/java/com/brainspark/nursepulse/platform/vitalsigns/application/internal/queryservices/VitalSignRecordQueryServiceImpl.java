@@ -41,7 +41,9 @@ public class VitalSignRecordQueryServiceImpl implements VitalSignRecordQueryServ
 
     @Override
     public Result<List<VitalSignRecord>, ApplicationError> handle(GetVitalSignRecordsByPatientIdQuery query) {
-        var vitalSignRecords = vitalSignRecordRepository.findByPatientId(query.patientId());
+        var vitalSignRecords = query.from() != null && query.to() != null
+                ? vitalSignRecordRepository.findByPatientIdAndDateRange(query.patientId(), query.from(), query.to())
+                : vitalSignRecordRepository.findByPatientId(query.patientId());
 
         return Result.success(vitalSignRecords);
     }

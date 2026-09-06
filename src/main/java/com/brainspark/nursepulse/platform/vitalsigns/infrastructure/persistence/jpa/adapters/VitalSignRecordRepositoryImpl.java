@@ -6,6 +6,7 @@ import com.brainspark.nursepulse.platform.vitalsigns.infrastructure.persistence.
 import com.brainspark.nursepulse.platform.vitalsigns.infrastructure.persistence.jpa.repositories.VitalSignRecordPersistenceRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,14 @@ public class VitalSignRecordRepositoryImpl implements VitalSignRecordRepository 
     @Override
     public List<VitalSignRecord> findByPatientId(Long patientId) {
         return vitalSignRecordPersistenceRepository.findByPatientId(patientId)
+                .stream()
+                .map(VitalSignRecordPersistenceAssembler::toDomainFromPersistence)
+                .toList();
+    }
+
+    @Override
+    public List<VitalSignRecord> findByPatientIdAndDateRange(Long patientId, LocalDateTime from, LocalDateTime to) {
+        return vitalSignRecordPersistenceRepository.findByPatientIdAndRecordedAtBetween(patientId, from, to)
                 .stream()
                 .map(VitalSignRecordPersistenceAssembler::toDomainFromPersistence)
                 .toList();

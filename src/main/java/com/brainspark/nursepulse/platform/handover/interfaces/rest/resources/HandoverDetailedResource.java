@@ -2,6 +2,8 @@ package com.brainspark.nursepulse.platform.handover.interfaces.rest.resources;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.Date;
+
 @Schema(
         name = "HandoverDetailedResponse",
         description = "Detailed handover information response, including complete SBAR content if available",
@@ -11,6 +13,9 @@ public record HandoverDetailedResource(
         @Schema(description = "Handover unique identifier", example = "1")
         Long id,
 
+        @Schema(description = "Timestamp when the handover was registered")
+        Date createdAt,
+
         @Schema(description = "Patient ID associated with the handover", example = "1")
         Long patientId,
 
@@ -19,6 +24,21 @@ public record HandoverDetailedResource(
 
         @Schema(description = "Handover description (Complete SBAR report)", example = "Situation: Patient stable... Background: admitted for... Assessment: ... Recommendation: ...")
         String description,
+
+        @Schema(description = "SBAR - Situation")
+        String situation,
+
+        @Schema(description = "SBAR - Background")
+        String background,
+
+        @Schema(description = "SBAR - Assessment")
+        String assessment,
+
+        @Schema(description = "SBAR - Recommendation")
+        String recommendation,
+
+        @Schema(description = "Username of the nurse who registered the handover", example = "nurse.daniela")
+        String registeredBy,
 
         @Schema(description = "Handover status", example = "PENDING")
         String status,

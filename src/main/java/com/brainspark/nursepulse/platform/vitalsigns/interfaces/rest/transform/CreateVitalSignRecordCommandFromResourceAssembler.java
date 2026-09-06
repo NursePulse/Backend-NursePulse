@@ -9,10 +9,10 @@ public final class CreateVitalSignRecordCommandFromResourceAssembler {
     private CreateVitalSignRecordCommandFromResourceAssembler() {
     }
 
-    public static CreateVitalSignRecordCommand toCommandFromResource(CreateVitalSignRecordResource resource) {
+    public static CreateVitalSignRecordCommand toCommandFromResource(CreateVitalSignRecordResource resource, Long nurseId) {
         return new CreateVitalSignRecordCommand(
                 resource.patientId(),
-                resource.nurseId(),
+                nurseId,
                 resource.heartRate(),
                 resource.respiratoryRate(),
                 new BloodPressure(resource.systolicPressure(), resource.diastolicPressure()),

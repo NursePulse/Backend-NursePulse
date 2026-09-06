@@ -223,9 +223,11 @@ care team can monitor their clinical state.
 
 **Acceptance criteria:**
 
-- The request records patient and nurse identifiers, heart rate, respiratory
-  rate, blood pressure, oxygen saturation, temperature, and an optional
-  recording time.
+- The request records the patient identifier, heart rate, respiratory rate,
+  blood pressure, oxygen saturation, temperature, and an optional recording
+  time. The responsible nurse is **not** taken from the request body: it is
+  resolved server-side from the authenticated JWT (`IamContextFacade`), so a
+  client cannot register a vital sign on behalf of another nurse.
 - A new record starts with the `UNASSESSED` risk level.
 - Physiological range validations reject invalid data.
 - A valid record returns `201 Created`.
@@ -234,13 +236,15 @@ care team can monitor their clinical state.
 ### TS-VIT-002 - Consult vital sign history
 
 **As a** clinical professional, **I want** to consult vital sign records, **so
-that** I can identify changes in the patient's condition.
+that** I can identify changes in the patient's condition, optionally
+restricted to a clinical period (US-17).
 
 **Endpoints:**
 
 - `GET /api/v1/vital-sign-records`
 - `GET /api/v1/vital-sign-records/{vitalSignRecordId}`
-- `GET /api/v1/vital-sign-records/patients/{patientId}`
+- `GET /api/v1/vital-sign-records/patients/{patientId}` (optional `from`,
+  `to` ISO `LocalDateTime` query params)
 - `GET /api/v1/vital-sign-records/patients/{patientId}/latest`
 
 **Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
@@ -248,6 +252,8 @@ that** I can identify changes in the patient's condition.
 **Acceptance criteria:**
 
 - Records can be retrieved globally, by identifier, or by patient.
+- When both `from` and `to` are supplied, only records within that period are
+  returned.
 - The latest endpoint returns the most recent patient measurement.
 - Unknown records use the shared not-found response.
 
@@ -272,27 +278,34 @@ the shift, **so that** the care team keeps a shared record of what happened.
 ### TS-EVT-002 - Consult clinical events
 
 **As a** clinical professional, **I want** to consult registered events, **so
-that** I can follow the operational history of the service and of each patient.
+that** I can follow the operational history of the service and of each
+patient, optionally restricted to a clinical period (US-17).
 
 **Endpoints:**
 
 - `GET /api/v1/clinical-events`
-- `GET /api/v1/clinical-events/patients/{patientId}`
+- `GET /api/v1/clinical-events/patients/{patientId}` (optional `from`, `to`
+  ISO `LocalDateTime` query params)
 
 **Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
 - Events can be retrieved globally or filtered by patient.
+- When both `from` and `to` are supplied, only events within that period are
+  returned.
 - Each event exposes its author and occurrence time.
-- A patient without events returns an empty list.
+- A patient without events (or without events in the requested period)
+  returns an empty list.
 
 ## Handover bounded context
 
 ### TS-HAN-001 - Create an SBAR handover
 
-**As a** nurse, **I want** to create a patient handover, **so that** the
-incoming shift receives the relevant care information.
+**As a** nurse, **I want** to create a patient handover with the SBAR
+structure (Situation, Background, Assessment, Recommendation), **so that** the
+incoming shift receives the relevant care information in a structured way
+(US-13).
 
 **Endpoint:** `POST /api/v1/handovers`
 
@@ -300,14 +313,24 @@ incoming shift receives the relevant care information.
 
 **Acceptance criteria:**
 
-- A valid title, description, patient, and incoming nurse create a handover.
+- A valid title and the four SBAR sections (`situation`, `background`,
+  `assessment`, `recommendation`) create a handover; each section is a
+  dedicated, required field (not free text merged into one description).
+- The registering nurse (`registeredBy`) is derived from the authenticated
+  JWT, never from the request body.
 - A new handover begins in `PENDING` status.
+- Missing or blank SBAR sections are rejected with a validation error
+  (`400 Bad Request`).
 - The operation returns `201 Created`.
+- Handovers created before this structure was introduced only have the SBAR
+  content encoded inside the legacy `description` field; reading them still
+  populates `situation`/`background`/`assessment`/`recommendation` by parsing
+  that legacy format, so existing data keeps displaying correctly.
 
 ### TS-HAN-002 - Consult handovers
 
 **As a** clinical professional, **I want** to consult handovers, **so that** I
-understand the patient's recent care context.
+understand the patient's recent care context (US-14).
 
 **Endpoints:**
 
@@ -319,13 +342,14 @@ understand the patient's recent care context.
 **Acceptance criteria:**
 
 - Patient handovers support optional start and end date filters.
-- A handover detail includes its status and clinical notes.
+- A handover detail includes its status, the four SBAR sections, who
+  registered it, and when it was registered (`createdAt`).
 - An unknown handover returns `404 Not Found`.
 
 ### TS-HAN-003 - Acknowledge a handover
 
 **As an** incoming nurse, **I want** to acknowledge a handover, **so that** the
-system records that the information was received.
+system records that the information was received (US-15).
 
 **Endpoint:** `PATCH /api/v1/handovers/{handoverId}/acknowledge`
 
@@ -334,7 +358,10 @@ system records that the information was received.
 **Acceptance criteria:**
 
 - A valid acknowledgement changes the handover to `ACKNOWLEDGED`.
-- The incoming nurse and any additional notes are recorded.
+- The acknowledging nurse is derived from the authenticated JWT (not from the
+  request body) and recorded together with any additional notes.
+- A handover that has not been acknowledged yet is reported with status
+  `PENDING` when consulted.
 - Doctors cannot acknowledge nursing handovers.
 
 ## Critical events bounded context

@@ -5,7 +5,7 @@ import com.brainspark.nursepulse.platform.handover.interfaces.rest.resources.Ack
 
 public class AcknowledgeHandoverCommandFromResourceAssembler {
 
-    public static AcknowledgeHandoverCommand toCommandFromResource(Long handoverId, AcknowledgeHandoverResource resource) {
-        return new AcknowledgeHandoverCommand(handoverId, resource.incomingNurseId(), resource.additionalNotes());
+    public static AcknowledgeHandoverCommand toCommandFromResource(Long handoverId, AcknowledgeHandoverResource resource, Long incomingNurseId) {
+        return new AcknowledgeHandoverCommand(handoverId, incomingNurseId, resource.additionalNotes());
     }
 }

@@ -1,5 +1,6 @@
 package com.brainspark.nursepulse.platform.vitalsigns.interfaces.rest;
 
+import com.brainspark.nursepulse.platform.iam.interfaces.acl.IamContextFacade;
 import com.brainspark.nursepulse.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import com.brainspark.nursepulse.platform.vitalsigns.application.commandservices.VitalSignRecordCommandService;
 import com.brainspark.nursepulse.platform.vitalsigns.application.queryservices.VitalSignRecordQueryService;
@@ -12,9 +13,13 @@ import com.brainspark.nursepulse.platform.vitalsigns.interfaces.rest.transform.V
 import com.brainspark.nursepulse.platform.vitalsigns.domain.model.queries.GetAllVitalSignRecordsQuery;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -25,19 +30,26 @@ public class VitalSignRecordsController {
 
     private final VitalSignRecordCommandService vitalSignRecordCommandService;
     private final VitalSignRecordQueryService vitalSignRecordQueryService;
+    private final IamContextFacade iamContextFacade;
 
 
     public VitalSignRecordsController(
             VitalSignRecordCommandService vitalSignRecordCommandService,
-            VitalSignRecordQueryService vitalSignRecordQueryService
+            VitalSignRecordQueryService vitalSignRecordQueryService,
+            IamContextFacade iamContextFacade
     ) {
         this.vitalSignRecordCommandService = vitalSignRecordCommandService;
         this.vitalSignRecordQueryService = vitalSignRecordQueryService;
+        this.iamContextFacade = iamContextFacade;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createVitalSignRecord(@RequestBody @Valid CreateVitalSignRecordResource resource) {
-        var command = CreateVitalSignRecordCommandFromResourceAssembler.toCommandFromResource(resource);
+    public ResponseEntity<?> createVitalSignRecord(
+            @RequestBody @Valid CreateVitalSignRecordResource resource,
+            Authentication authentication
+    ) {
+        var nurseId = iamContextFacade.fetchUserIdByUsername(authentication.getName());
+        var command = CreateVitalSignRecordCommandFromResourceAssembler.toCommandFromResource(resource, nurseId);
         var result = vitalSignRecordCommandService.handle(command);
 
         return ResponseEntityAssembler.toResponseEntityFromResult(
@@ -62,8 +74,12 @@ public class VitalSignRecordsController {
     }
 
     @GetMapping("/patients/{patientId}")
-    public ResponseEntity<?> getVitalSignRecordsByPatientId(@PathVariable Long patientId) {
-        var query = new GetVitalSignRecordsByPatientIdQuery(patientId);
+    public ResponseEntity<?> getVitalSignRecordsByPatientId(
+            @PathVariable Long patientId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to
+    ) {
+        var query = new GetVitalSignRecordsByPatientIdQuery(patientId, from, to);
         var result = vitalSignRecordQueryService.handle(query);
 
         return ResponseEntityAssembler.toResponseEntityFromResult(
