@@ -36,3 +36,4 @@ build/
 
 ### Local secrets ###
 run-dev.sh
+ .claude
