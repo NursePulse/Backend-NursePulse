@@ -433,17 +433,22 @@ resolution remains explicit and accountable.
 
 ### TS-AUD-001 - Append an audit event
 
-**As an** administrator or trusted platform process, **I want** to append an
-audit event, **so that** sensitive clinical actions remain traceable.
+**As** clinical staff, **I want** to append an audit event for an action I
+just performed, **so that** sensitive clinical actions remain traceable back
+to their real author.
 
 **Endpoint:** `POST /api/v1/audit-logs`
 
-**Role:** `ROLE_ADMIN`
+**Role:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
 - The event identifies the entity, action, performer, time, and metadata.
 - The audit trail is append-only; no update or delete endpoint exists.
+- The `performedBy` value sent by the client is ignored; the server always
+  stamps the event with the authenticated user's identity
+  (`CreateAuditLogCommandFromResourceAssembler`), so no caller — regardless
+  of role — can attribute an audit event to a different user.
 - A valid event returns `201 Created`.
 
 ### TS-AUD-002 - Search audit events

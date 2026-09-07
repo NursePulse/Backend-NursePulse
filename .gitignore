@@ -33,3 +33,6 @@ build/
 
 ### macOS ###
 .DS_Store
+
+### Local secrets ###
+run-dev.sh

@@ -162,6 +162,10 @@ public class WebSecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/v1/alerts/**").hasAnyRole("NURSE", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/alerts/**").hasAnyRole("NURSE", "DOCTOR", "ADMIN")
 
+                        // Consolidated clinical reports
+                        .requestMatchers(HttpMethod.POST, "/api/v1/reports/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reports/**").hasAnyRole("DOCTOR", "ADMIN")
+
                         // Any future API endpoint remains restricted to known application roles.
                         .requestMatchers("/api/v1/**").hasAnyRole("NURSE", "DOCTOR", "ADMIN")
                         .anyRequest().authenticated());

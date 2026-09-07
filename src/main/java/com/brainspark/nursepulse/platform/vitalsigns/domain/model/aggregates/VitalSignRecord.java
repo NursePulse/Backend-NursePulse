@@ -6,6 +6,7 @@ import com.brainspark.nursepulse.platform.vitalsigns.domain.model.commands.Creat
 import com.brainspark.nursepulse.platform.vitalsigns.domain.model.events.VitalSignRecordedEvent;
 import com.brainspark.nursepulse.platform.vitalsigns.domain.model.valueobjects.BloodPressure;
 import com.brainspark.nursepulse.platform.vitalsigns.domain.model.valueobjects.RiskLevel;
+import com.brainspark.nursepulse.platform.vitalsigns.domain.services.VitalSignRiskClassifier;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -65,7 +66,13 @@ public class VitalSignRecord extends AbstractDomainAggregateRoot<VitalSignRecord
         this.bloodPressure = command.bloodPressure();
         this.oxygenSaturation = command.oxygenSaturation();
         this.temperature = command.temperature();
-        this.riskLevel = RiskLevel.UNASSESSED;
+        this.riskLevel = VitalSignRiskClassifier.classify(
+                this.heartRate,
+                this.respiratoryRate,
+                this.bloodPressure,
+                this.oxygenSaturation,
+                this.temperature
+        );
         this.recordedAt = command.recordedAt() != null
                 ? command.recordedAt()
                 : LocalDateTime.now();

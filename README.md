@@ -165,11 +165,17 @@ Consulta la documentación generada para ver rutas exactas y contratos.
 | Consultar, crear o atender alertas | Sí | Sí | Sí |
 | Cerrar alertas | No | Sí | Sí |
 | Consultar auditorías | No | Sí | Sí |
-| Crear registros de auditoría | No | No | Sí |
+| Crear registros de auditoría propios | Sí | Sí | Sí |
 | Administrar usuarios y roles | No | No | Sí |
 
 La matriz completa, incluyendo endpoints y criterios de aceptación, está en
 [`docs/user-stories.md`](docs/user-stories.md).
+
+**Nota sobre auditoría:** cualquier rol clínico puede registrar una entrada de
+auditoría, pero solo para sí mismo — el servidor ignora el campo `performedBy`
+enviado por el cliente y siempre usa la identidad del JWT autenticado
+(`CreateAuditLogCommandFromResourceAssembler`), así que ningún usuario puede
+suplantar a otro en el registro de auditoría.
 
 ## Convenciones de desarrollo
 
