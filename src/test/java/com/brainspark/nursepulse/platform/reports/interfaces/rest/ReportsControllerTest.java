@@ -58,7 +58,7 @@ class ReportsControllerTest {
                 new ReportSummaryResource(1, 5, 0, 1, 0, 0, 12),
                 "Periodo sin alertas criticas activas."
         );
-        when(authentication.getName()).thenReturn("medico.torres");
+        when(authentication.getName()).thenReturn("jefe.torres");
         when(reportCommandService.handle(any(CreateReportCommand.class))).thenReturn(
                 Result.failure(ApplicationError.unexpected("test", "stop after capture"))
         );
@@ -67,7 +67,7 @@ class ReportsControllerTest {
 
         var captor = ArgumentCaptor.forClass(CreateReportCommand.class);
         verify(reportCommandService).handle(captor.capture());
-        assertEquals("medico.torres", captor.getValue().generatedBy());
+        assertEquals("jefe.torres", captor.getValue().generatedBy());
     }
 
     @Test
@@ -77,7 +77,7 @@ class ReportsControllerTest {
                 "Reporte de prueba",
                 Instant.parse("2026-09-01T00:00:00Z"),
                 Instant.parse("2026-09-07T23:59:59Z"),
-                "medico.torres",
+                "jefe.torres",
                 new com.brainspark.nursepulse.platform.reports.domain.model.valueobjects.ReportSummary(
                         1, 5, 0, 1, 0, 0, 12
                 ),

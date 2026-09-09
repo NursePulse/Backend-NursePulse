@@ -12,15 +12,15 @@ import java.util.List;
 @Schema(
     name = "UpdateUserRolesRequest",
     description = "New set of roles for the user",
-    example = "{\"roles\": [\"ROLE_DOCTOR\"]}"
+    example = "{\"roles\": [\"ROLE_HEAD_NURSE\"]}"
 )
 public record UpdateUserRolesResource(
     @NotEmpty(message = "{validation.not-blank}")
     @ArraySchema(
         schema = @Schema(
             description = "Role name",
-            example = "ROLE_DOCTOR",
-            allowableValues = {"ROLE_NURSE", "ROLE_DOCTOR", "ROLE_ADMIN"}
+            example = "ROLE_HEAD_NURSE",
+            allowableValues = {"ROLE_NURSE", "ROLE_HEAD_NURSE", "ROLE_ADMIN"}
         )
     )
     List<String> roles

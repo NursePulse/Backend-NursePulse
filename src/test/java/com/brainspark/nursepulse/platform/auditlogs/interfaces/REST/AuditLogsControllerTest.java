@@ -50,7 +50,7 @@ class AuditLogsControllerTest {
                 Instant.parse("2026-07-06T12:00:00Z"),
                 Map.of("description", "Clinical event created")
         );
-        when(authentication.getName()).thenReturn("doctor.test");
+        when(authentication.getName()).thenReturn("headnurse.test");
         when(commandService.handle(any())).thenReturn(
                 Result.failure(ApplicationError.unexpected("test", "stop after capture"))
         );
@@ -59,6 +59,6 @@ class AuditLogsControllerTest {
 
         var commandCaptor = ArgumentCaptor.forClass(CreateAuditLogCommand.class);
         verify(commandService).handle(commandCaptor.capture());
-        assertEquals("doctor.test", commandCaptor.getValue().performedBy());
+        assertEquals("headnurse.test", commandCaptor.getValue().performedBy());
     }
 }

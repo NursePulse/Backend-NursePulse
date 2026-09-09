@@ -16,7 +16,7 @@ public record ReportResource(
         @Schema(description = "Report title", example = "Resumen clinico de la tarde")
         String title,
 
-        @Schema(description = "Username of the staff member who generated the report", example = "medico")
+        @Schema(description = "Username of the staff member who generated the report", example = "jefe.torres")
         String generatedBy,
 
         @Schema(description = "Inclusive lower bound of the reported period")

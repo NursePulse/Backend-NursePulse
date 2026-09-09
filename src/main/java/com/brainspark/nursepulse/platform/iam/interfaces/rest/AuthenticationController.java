@@ -86,12 +86,12 @@ public class AuthenticationController {
     /**
      * Handles the sign-up request.
      * @param signUpResource the sign-up request body with username, password and clinical role.
-     * @return the created user resource with the selected nurse or doctor role.
+     * @return the created user resource with the selected nurse or head nurse role.
      */
     @PostMapping("/sign-up")
     @Operation(
         summary = "User registration",
-        description = "Creates a clinical staff account with ROLE_NURSE or ROLE_DOCTOR. "
+        description = "Creates a clinical staff account with ROLE_NURSE or ROLE_HEAD_NURSE. "
                 + "ROLE_ADMIN is never accepted through public registration."
     )
     @ApiResponses(value = {

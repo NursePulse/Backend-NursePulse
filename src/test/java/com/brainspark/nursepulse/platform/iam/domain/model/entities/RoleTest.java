@@ -22,8 +22,8 @@ class RoleTest {
     @Test
     void shouldParseRoleNamesCaseInsensitively() {
         assertEquals(
-                Roles.ROLE_DOCTOR,
-                Role.toRoleFromName("role_doctor").getName()
+                Roles.ROLE_HEAD_NURSE,
+                Role.toRoleFromName("role_head_nurse").getName()
         );
     }
 

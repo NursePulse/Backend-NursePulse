@@ -17,7 +17,7 @@ public record RoleResource(
     @Schema(
         description = "Role name",
         example = "ROLE_NURSE",
-        allowableValues = {"ROLE_NURSE", "ROLE_DOCTOR", "ROLE_ADMIN"}
+        allowableValues = {"ROLE_NURSE", "ROLE_HEAD_NURSE", "ROLE_ADMIN"}
     )
     String name
 ) {

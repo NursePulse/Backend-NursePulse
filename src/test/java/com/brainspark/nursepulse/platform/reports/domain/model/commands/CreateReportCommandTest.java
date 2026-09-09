@@ -20,7 +20,7 @@ class CreateReportCommandTest {
                 " ",
                 Instant.parse("2026-09-01T00:00:00Z"),
                 Instant.parse("2026-09-02T00:00:00Z"),
-                "medico.torres",
+                "jefe.torres",
                 VALID_SUMMARY,
                 null
         ));
@@ -33,7 +33,7 @@ class CreateReportCommandTest {
                 "Reporte invalido",
                 Instant.parse("2026-09-07T00:00:00Z"),
                 Instant.parse("2026-09-01T00:00:00Z"),
-                "medico.torres",
+                "jefe.torres",
                 VALID_SUMMARY,
                 null
         ));
@@ -59,7 +59,7 @@ class CreateReportCommandTest {
                 "Reporte",
                 Instant.parse("2026-09-01T00:00:00Z"),
                 Instant.parse("2026-09-02T00:00:00Z"),
-                "medico.torres",
+                "jefe.torres",
                 null,
                 null
         ));
@@ -72,7 +72,7 @@ class CreateReportCommandTest {
                 "Reporte valido",
                 Instant.parse("2026-09-01T00:00:00Z"),
                 Instant.parse("2026-09-02T00:00:00Z"),
-                "medico.torres",
+                "jefe.torres",
                 VALID_SUMMARY,
                 null
         ));

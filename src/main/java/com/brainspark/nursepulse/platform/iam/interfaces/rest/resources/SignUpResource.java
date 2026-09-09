@@ -10,8 +10,8 @@ import jakarta.validation.constraints.Size;
  */
 @Schema(
     name = "SignUpRequest",
-    description = "Clinical staff sign-up request. Public registration only accepts nurse or doctor roles.",
-    example = "{\"username\": \"doctor.maria\", \"password\": \"SecurePass123!\", \"role\": \"ROLE_DOCTOR\"}"
+    description = "Clinical staff sign-up request. Public registration only accepts nurse or head nurse roles.",
+    example = "{\"username\": \"headnurse.maria\", \"password\": \"SecurePass123!\", \"role\": \"ROLE_HEAD_NURSE\"}"
 )
 public record SignUpResource(
     @NotBlank(message = "{validation.not-blank}")
@@ -36,13 +36,13 @@ public record SignUpResource(
 
     @NotBlank(message = "{validation.not-blank}")
     @Pattern(
-        regexp = "ROLE_NURSE|ROLE_DOCTOR",
-        message = "Public registration only accepts ROLE_NURSE or ROLE_DOCTOR"
+        regexp = "ROLE_NURSE|ROLE_HEAD_NURSE",
+        message = "Public registration only accepts ROLE_NURSE or ROLE_HEAD_NURSE"
     )
     @Schema(
         description = "Clinical role requested by the new user. ROLE_ADMIN can only be assigned by an administrator.",
-        example = "ROLE_DOCTOR",
-        allowableValues = {"ROLE_NURSE", "ROLE_DOCTOR"}
+        example = "ROLE_HEAD_NURSE",
+        allowableValues = {"ROLE_NURSE", "ROLE_HEAD_NURSE"}
     )
     String role
 ) {

@@ -75,7 +75,7 @@ package "Shared Kernel" #E2E8F0 {
 package "IAM Bounded Context" #DBEAFE {
   enum Roles {
     ROLE_NURSE
-    ROLE_DOCTOR
+    ROLE_HEAD_NURSE
     ROLE_ADMIN
   }
 
@@ -214,7 +214,7 @@ note bottom of WebSecurityConfiguration
   Public: authentication, Swagger / OpenAPI
   NURSE: patients, vital signs,
     handovers, alert attendance
-  DOCTOR: clinical read access,
+  HEAD_NURSE: clinical read access,
     alert closure, audit read
   ADMIN: all API capabilities
 end note

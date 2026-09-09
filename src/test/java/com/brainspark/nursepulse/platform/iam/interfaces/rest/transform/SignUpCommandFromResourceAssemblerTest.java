@@ -9,16 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SignUpCommandFromResourceAssemblerTest {
 
     @Test
-    void shouldMapSelectedDoctorRoleToSignUpCommand() {
+    void shouldMapSelectedHeadNurseRoleToSignUpCommand() {
         var resource = new SignUpResource(
-                " Doctor.Maria ",
+                " HeadNurse.Maria ",
                 "SecurePass123!",
-                "ROLE_DOCTOR"
+                "ROLE_HEAD_NURSE"
         );
 
         var command = SignUpCommandFromResourceAssembler.toCommandFromResource(resource);
 
-        assertEquals("doctor.maria", command.username());
-        assertEquals(Roles.ROLE_DOCTOR, command.roles().getFirst().getName());
+        assertEquals("headnurse.maria", command.username());
+        assertEquals(Roles.ROLE_HEAD_NURSE, command.roles().getFirst().getName());
     }
 }

@@ -2,7 +2,7 @@
 
 This document describes the technical behavior currently exposed by the
 NursePulse REST API. The stories are grouped by bounded context and use the
-roles `ROLE_NURSE`, `ROLE_DOCTOR`, and `ROLE_ADMIN`.
+roles `ROLE_NURSE`, `ROLE_HEAD_NURSE`, and `ROLE_ADMIN`.
 
 ## Definition of Done
 
@@ -18,7 +18,7 @@ Every technical story is considered done when:
 
 ## Clinical permission matrix
 
-| API capability | Public | Nurse | Doctor | Admin |
+| API capability | Public | Nurse | Head Nurse | Admin |
 |---|:---:|:---:|:---:|:---:|
 | Sign up and sign in | Yes | Yes | Yes | Yes |
 | Swagger UI and OpenAPI document | Yes | Yes | Yes | Yes |
@@ -47,7 +47,7 @@ authenticated user without the required role return `403 Forbidden`.
 
 ### TS-IAM-001 - Register a clinical staff account
 
-**As a** new clinical user, **I want** to register as a nurse or doctor, **so
+**As a** new clinical user, **I want** to register as a nurse or head nurse, **so
 that** my account starts with the permissions required for my work.
 
 **Endpoint:** `POST /api/v1/authentication/sign-up`
@@ -58,7 +58,7 @@ that** my account starts with the permissions required for my work.
 
 - Given a valid unique username, password, and clinical role, when the request
   is submitted, then a user is created.
-- Public registration accepts only `ROLE_NURSE` or `ROLE_DOCTOR`.
+- Public registration accepts only `ROLE_NURSE` or `ROLE_HEAD_NURSE`.
 - `ROLE_ADMIN` is rejected during public registration and remains available
   only through the administrator-protected role assignment endpoint.
 - The password is stored as a BCrypt hash and is never returned.
@@ -88,7 +88,7 @@ subsequent API requests.
 
 **Acceptance criteria:**
 
-- At startup, `ROLE_NURSE`, `ROLE_DOCTOR`, and `ROLE_ADMIN` are available.
+- At startup, `ROLE_NURSE`, `ROLE_HEAD_NURSE`, and `ROLE_ADMIN` are available.
 - Role initialization is idempotent.
 - When both bootstrap administrator variables are configured, an initial admin
   account is created safely.
@@ -120,7 +120,7 @@ by role, **so that** users only perform duties related to their work.
 
 - Authentication and API documentation remain public.
 - Every clinical endpoint requires a valid JWT.
-- Nurse, doctor, and administrator permissions match the matrix in this
+- Nurse, head nurse, and administrator permissions match the matrix in this
   document.
 - A future endpoint under `/api/v1/**` is restricted to a known application
   role by default.
@@ -172,7 +172,7 @@ that** I can make informed care decisions.
 - `GET /api/v1/patients`
 - `GET /api/v1/patients/{patientId}`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -187,7 +187,7 @@ that** the active clinical record remains accurate.
 
 **Endpoint:** `PUT /api/v1/patients/{patientId}`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -207,7 +207,7 @@ that** destructive data changes remain tightly controlled.
 **Acceptance criteria:**
 
 - A successful deletion returns `204 No Content`.
-- Nurses and doctors receive `403 Forbidden`.
+- Nurses and head nurses receive `403 Forbidden`.
 - A nonexistent patient is reported through the shared error contract.
 
 ## Vital signs bounded context
@@ -247,7 +247,7 @@ restricted to a clinical period (US-17).
   `to` ISO `LocalDateTime` query params)
 - `GET /api/v1/vital-sign-records/patients/{patientId}/latest`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -266,7 +266,7 @@ the shift, **so that** the care team keeps a shared record of what happened.
 
 **Endpoint:** `POST /api/v1/clinical-events`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -287,7 +287,7 @@ patient, optionally restricted to a clinical period (US-17).
 - `GET /api/v1/clinical-events/patients/{patientId}` (optional `from`, `to`
   ISO `LocalDateTime` query params)
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -337,7 +337,7 @@ understand the patient's recent care context (US-14).
 - `GET /api/v1/handovers/patients/{patientId}`
 - `GET /api/v1/handovers/{handoverId}`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -362,7 +362,7 @@ system records that the information was received (US-15).
   request body) and recorded together with any additional notes.
 - A handover that has not been acknowledged yet is reported with status
   `PENDING` when consulted.
-- Doctors cannot acknowledge nursing handovers.
+- Head nurses cannot acknowledge nursing handovers.
 
 ## Critical events bounded context
 
@@ -373,7 +373,7 @@ potentially critical event receives attention.
 
 **Endpoint:** `POST /api/v1/alerts`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -392,7 +392,7 @@ prioritize patient care.
 - `GET /api/v1/alerts/{alertId}`
 - `GET /api/v1/alerts/patients/{patientId}`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -406,7 +406,7 @@ the team knows the event is being handled.
 
 **Endpoint:** `PATCH /api/v1/alerts/{alertId}/attend`
 
-**Roles:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -416,12 +416,12 @@ the team knows the event is being handled.
 
 ### TS-ALT-004 - Close an alert
 
-**As a** doctor, **I want** to close a resolved alert, **so that** the clinical
+**As a** head nurse, **I want** to close a resolved alert, **so that** the clinical
 resolution remains explicit and accountable.
 
 **Endpoint:** `PATCH /api/v1/alerts/{alertId}/close`
 
-**Roles:** `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -439,7 +439,7 @@ to their real author.
 
 **Endpoint:** `POST /api/v1/audit-logs`
 
-**Role:** `ROLE_NURSE`, `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Role:** `ROLE_NURSE`, `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -453,12 +453,12 @@ to their real author.
 
 ### TS-AUD-002 - Search audit events
 
-**As a** doctor or administrator, **I want** to search audit events, **so that**
+**As a** head nurse or administrator, **I want** to search audit events, **so that**
 I can review clinical activity.
 
 **Endpoint:** `GET /api/v1/audit-logs`
 
-**Roles:** `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -469,12 +469,12 @@ I can review clinical activity.
 
 ### TS-AUD-003 - Consult audit detail
 
-**As a** doctor or administrator, **I want** to inspect one audit event, **so
+**As a** head nurse or administrator, **I want** to inspect one audit event, **so
 that** I can understand the exact recorded action.
 
 **Endpoint:** `GET /api/v1/audit-logs/{auditLogId}`
 
-**Roles:** `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -483,12 +483,12 @@ that** I can understand the exact recorded action.
 
 ### TS-AUD-004 - Consult a patient audit timeline
 
-**As a** doctor or administrator, **I want** a chronological patient timeline,
+**As a** head nurse or administrator, **I want** a chronological patient timeline,
 **so that** I can reconstruct clinical activity.
 
 **Endpoint:** `GET /api/v1/audit-logs/patients/{patientId}/timeline`
 
-**Roles:** `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 
@@ -498,12 +498,12 @@ that** I can understand the exact recorded action.
 
 ### TS-AUD-005 - Consult entity history
 
-**As a** doctor or administrator, **I want** the history of one clinical
+**As a** head nurse or administrator, **I want** the history of one clinical
 entity, **so that** I can trace its lifecycle.
 
 **Endpoint:** `GET /api/v1/audit-logs/entities/{entityType}/{entityId}`
 
-**Roles:** `ROLE_DOCTOR`, `ROLE_ADMIN`
+**Roles:** `ROLE_HEAD_NURSE`, `ROLE_ADMIN`
 
 **Acceptance criteria:**
 

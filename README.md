@@ -130,7 +130,7 @@ Cuando la aplicación esté en ejecución, la documentación interactiva generad
 
 La plataforma incluye responsabilidades relacionadas con procesos clínicos. Algunos recursos esperables (verificar en la documentación OpenAPI real):
 
-- `POST /api/v1/authentication/sign-up` — Registra una cuenta clínica con `ROLE_NURSE` o `ROLE_DOCTOR`.
+- `POST /api/v1/authentication/sign-up` — Registra una cuenta clínica con `ROLE_NURSE` o `ROLE_HEAD_NURSE`.
 - `POST /api/v1/authentication/sign-in` — Autentica y entrega un JWT.
 - `GET /api/v1/users` — Lista usuarios; requiere `ROLE_ADMIN`.
 - `GET /api/v1/roles` — Lista roles; requiere `ROLE_ADMIN`.
@@ -143,8 +143,8 @@ Consulta la documentación generada para ver rutas exactas y contratos.
 ## Modelo de seguridad
 
 - La API no mantiene sesiones: cada solicitud protegida usa `Authorization: Bearer <token>`.
-- Los roles de NursePulse son `ROLE_NURSE`, `ROLE_DOCTOR` y `ROLE_ADMIN`.
-- El registro público acepta únicamente `ROLE_NURSE` o `ROLE_DOCTOR`; `ROLE_ADMIN`
+- Los roles de NursePulse son `ROLE_NURSE`, `ROLE_HEAD_NURSE` y `ROLE_ADMIN`.
+- El registro público acepta únicamente `ROLE_NURSE` o `ROLE_HEAD_NURSE`; `ROLE_ADMIN`
   solo puede asignarse mediante el endpoint administrativo protegido.
 - Todas las rutas funcionales requieren autenticación. Swagger y los endpoints de autenticación son públicos.
 - En un entorno nuevo se puede crear un administrador inicial mediante las variables
@@ -152,7 +152,7 @@ Consulta la documentación generada para ver rutas exactas y contratos.
 
 ### Permisos clínicos
 
-| Capacidad | `ROLE_NURSE` | `ROLE_DOCTOR` | `ROLE_ADMIN` |
+| Capacidad | `ROLE_NURSE` | `ROLE_HEAD_NURSE` | `ROLE_ADMIN` |
 |---|:---:|:---:|:---:|
 | Consultar pacientes | Sí | Sí | Sí |
 | Crear pacientes | Sí | No | Sí |

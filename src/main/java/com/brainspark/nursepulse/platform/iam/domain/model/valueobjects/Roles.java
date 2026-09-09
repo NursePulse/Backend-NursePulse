@@ -8,6 +8,6 @@ package com.brainspark.nursepulse.platform.iam.domain.model.valueobjects;
  */
 public enum Roles {
     ROLE_NURSE,
-    ROLE_DOCTOR,
+    ROLE_HEAD_NURSE,
     ROLE_ADMIN
 }

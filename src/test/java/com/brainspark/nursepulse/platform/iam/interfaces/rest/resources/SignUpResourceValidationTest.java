@@ -20,7 +20,7 @@ class SignUpResourceValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"ROLE_NURSE", "ROLE_DOCTOR"})
+    @ValueSource(strings = {"ROLE_NURSE", "ROLE_HEAD_NURSE"})
     void shouldAcceptPublicClinicalRoles(String role) {
         var resource = new SignUpResource(
                 "clinical.user",
