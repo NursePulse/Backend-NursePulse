@@ -12,8 +12,6 @@ import java.util.Optional;
 public interface HandoverPersistenceRepository extends JpaRepository<HandoverPersistenceEntity, Long> {
     Optional<HandoverPersistenceEntity> findByTitle(String title);
 
-    boolean existsByTitle(String title);
-
     List<HandoverPersistenceEntity> findByPatientId(Long patientId);
     List<HandoverPersistenceEntity> findByPatientIdAndCreatedAtBetween(Long patientId, Date startDate, Date endDate);
 }

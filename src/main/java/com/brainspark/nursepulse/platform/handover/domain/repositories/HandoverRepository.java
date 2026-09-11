@@ -22,7 +22,5 @@ public interface HandoverRepository {
 
     boolean existsById(Long id);
 
-    boolean existsByTitle(String title);
-
     void deleteById(Long id);
 }
