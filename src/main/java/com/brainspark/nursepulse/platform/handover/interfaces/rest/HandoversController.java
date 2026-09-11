@@ -7,6 +7,7 @@ import com.brainspark.nursepulse.platform.handover.interfaces.rest.resources.Cre
 import com.brainspark.nursepulse.platform.handover.interfaces.rest.resources.HandoverResource;
 import com.brainspark.nursepulse.platform.handover.interfaces.rest.transform.CreateHandoverCommandFromResourceAssembler;
 import com.brainspark.nursepulse.platform.handover.interfaces.rest.transform.HandoverResourceFromEntityAssembler;
+import com.brainspark.nursepulse.platform.iam.interfaces.acl.IamContextFacade;
 import com.brainspark.nursepulse.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -29,25 +31,30 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class HandoversController {
     private final HandoverCommandService handoverCommandService;
     private final HandoverQueryService handoverQueryService;
+    private final IamContextFacade iamContextFacade;
 
-    public HandoversController(HandoverCommandService handoverCommandService, HandoverQueryService handoverQueryService) {
+    public HandoversController(
+            HandoverCommandService handoverCommandService,
+            HandoverQueryService handoverQueryService,
+            IamContextFacade iamContextFacade
+    ) {
         this.handoverCommandService = handoverCommandService;
         this.handoverQueryService = handoverQueryService;
+        this.iamContextFacade = iamContextFacade;
     }
 
     @PostMapping
-    @Operation(summary = "Create a new handover", description = "Creates a new handover with title and description.")
+    @Operation(summary = "Create a new SBAR handover", description = "Creates a new handover with situation, background, assessment and recommendation. The registering nurse is derived from the authenticated JWT.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
                     description = "Handover created successfully",
                     content = @Content(schema = @Schema(implementation = HandoverResource.class))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "409", description = "Handover with the same title already exists")
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    public ResponseEntity<?> createHandover(@RequestBody CreateHandoverResource resource) {
-        var createHandoverCommand = CreateHandoverCommandFromResourceAssembler.toCommandFromResource(resource);
+    public ResponseEntity<?> createHandover(@RequestBody CreateHandoverResource resource, Authentication authentication) {
+        var createHandoverCommand = CreateHandoverCommandFromResourceAssembler.toCommandFromResource(resource, authentication.getName());
         var result = handoverCommandService.handle(createHandoverCommand);
 
         return ResponseEntityAssembler.toResponseEntityFromResult(
@@ -105,7 +112,7 @@ public class HandoversController {
     }
 
     @PatchMapping("/{handoverId}/acknowledge")
-    @Operation(summary = "Acknowledge a handover", description = "Allows the incoming nurse to confirm they have read and understood the handover.")
+    @Operation(summary = "Acknowledge a handover", description = "Allows the incoming nurse to confirm they have read and understood the handover. The acknowledging nurse is derived from the authenticated JWT.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -117,9 +124,11 @@ public class HandoversController {
     })
     public ResponseEntity<?> acknowledgeHandover(
             @PathVariable Long handoverId,
-            @RequestBody com.brainspark.nursepulse.platform.handover.interfaces.rest.resources.AcknowledgeHandoverResource resource
+            @RequestBody com.brainspark.nursepulse.platform.handover.interfaces.rest.resources.AcknowledgeHandoverResource resource,
+            Authentication authentication
     ) {
-        var command = com.brainspark.nursepulse.platform.handover.interfaces.rest.transform.AcknowledgeHandoverCommandFromResourceAssembler.toCommandFromResource(handoverId, resource);
+        var incomingNurseId = iamContextFacade.fetchUserIdByUsername(authentication.getName());
+        var command = com.brainspark.nursepulse.platform.handover.interfaces.rest.transform.AcknowledgeHandoverCommandFromResourceAssembler.toCommandFromResource(handoverId, resource, incomingNurseId);
         var result = handoverCommandService.handle(command);
 
         return ResponseEntityAssembler.toResponseEntityFromResult(

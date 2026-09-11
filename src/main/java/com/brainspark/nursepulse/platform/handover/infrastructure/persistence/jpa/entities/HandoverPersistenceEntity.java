@@ -21,8 +21,26 @@ public class HandoverPersistenceEntity extends AuditableAbstractPersistenceEntit
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4200)
     private String description;
+
+    @Column(length = 1000)
+    private String situation;
+
+    @Column(length = 1000)
+    private String background;
+
+    @Column(length = 1000)
+    private String assessment;
+
+    @Column(length = 1000)
+    private String recommendation;
+
+    @Column(name = "registered_by")
+    private String registeredBy;
+
+    @Column(name = "target_nurse_id")
+    private Long targetNurseId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
