@@ -19,7 +19,7 @@ public final class AuditLogTimelineItemResourceFromEntityAssembler {
                 entity.getActionType(),
                 entity.getPerformedBy(),
                 entity.getPerformedAt(),
-                AuditLogMetadataDeserializer.deserialize(entity.getMetadata().getValue())
+                AuditLogMetadataDeserializer.deserialize(AuditLogMetadataDeserializer.rawValueOf(entity))
         );
     }
 }

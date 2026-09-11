@@ -24,7 +24,7 @@ public final class AuditLogDetailResourceFromEntityAssembler{
                 entity.getActionType(),
                 entity.getPerformedBy(),
                 entity.getPerformedAt(),
-                AuditLogMetadataDeserializer.deserialize(entity.getMetadata().getValue()),
+                AuditLogMetadataDeserializer.deserialize(AuditLogMetadataDeserializer.rawValueOf(entity)),
                 entity.getCreatedAt(),
                 entity.getUpdateAt()
         );

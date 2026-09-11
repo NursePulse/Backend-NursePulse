@@ -47,4 +47,19 @@ public class GlobalExceptionHandler {
         return ErrorResponse.create(exception, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), message);
     }
 
+    /**
+     * Catch-all for any exception not handled by a more specific handler above.
+     * Without this, an uncaught exception falls through to Spring Boot's default
+     * error page, which serializes the full stack trace into the JSON response body
+     * — leaking internal implementation details and breaking the API's otherwise
+     * consistent error contract (see TS-06).
+     */
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    ErrorResponse handleException(Exception exception, Locale locale) {
+        log.error("Unexpected error", exception);
+        String message = messageSource.getMessage("error.unexpected.message", null, "Unexpected error", locale);
+        return ErrorResponse.create(exception, HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), message);
+    }
+
 }

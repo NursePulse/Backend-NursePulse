@@ -19,7 +19,7 @@ public final class AuditLogResourceFromEntityAssembler {
                 entity.getActionType(),
                 entity.getPerformedBy(),
                 entity.getPerformedAt(),
-                entity.getMetadata().getValue(),
+                AuditLogMetadataDeserializer.rawValueOf(entity),
                 entity.getCreatedAt()
         );
     }
