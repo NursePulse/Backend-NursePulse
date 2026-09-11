@@ -25,6 +25,7 @@ public class Alert extends AbstractDomainAggregateRoot<Alert> {
     private String description;
     private AlertStatus status;
     private String triggeredBy;
+    private LocalDateTime triggeredAt;
 
     private String attendedBy;
     private LocalDateTime attendedAt;
@@ -55,6 +56,7 @@ public class Alert extends AbstractDomainAggregateRoot<Alert> {
             String description,
             AlertStatus status,
             String triggeredBy,
+            LocalDateTime triggeredAt,
             String attendedBy,
             LocalDateTime attendedAt,
             String closedBy,
@@ -68,6 +70,7 @@ public class Alert extends AbstractDomainAggregateRoot<Alert> {
         this.description = description;
         this.status = status;
         this.triggeredBy = triggeredBy;
+        this.triggeredAt = triggeredAt;
         this.attendedBy = attendedBy;
         this.attendedAt = attendedAt;
         this.closedBy = closedBy;
@@ -148,6 +151,7 @@ public class Alert extends AbstractDomainAggregateRoot<Alert> {
             String description,
             AlertStatus status,
             String triggeredBy,
+            LocalDateTime triggeredAt,
             String attendedBy,
             LocalDateTime attendedAt,
             String closedBy,
@@ -162,6 +166,7 @@ public class Alert extends AbstractDomainAggregateRoot<Alert> {
                 description,
                 status,
                 triggeredBy,
+                triggeredAt,
                 attendedBy,
                 attendedAt,
                 closedBy,
