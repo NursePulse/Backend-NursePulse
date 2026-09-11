@@ -56,11 +56,6 @@ public class HandoverRepositoryImpl implements HandoverRepository {
     }
 
     @Override
-    public boolean existsByTitle(String title) {
-        return handoverPersistenceRepository.existsByTitle(title);
-    }
-
-    @Override
     public void deleteById(Long id) {
         handoverPersistenceRepository.deleteById(id);
     }
