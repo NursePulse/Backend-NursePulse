@@ -17,6 +17,7 @@ public final class AlertResourceFromEntityAssembler {
                 entity.getDescription(),
                 entity.getStatus(),
                 entity.getTriggeredBy(),
+                entity.getTriggeredAt(),
                 entity.getAttendedBy(),
                 entity.getAttendedAt(),
                 entity.getClosedBy(),

@@ -14,6 +14,7 @@ public record AlertResource(
         String description,
         AlertStatus status,
         String triggeredBy,
+        LocalDateTime triggeredAt,
         String attendedBy,
         LocalDateTime attendedAt,
         String closedBy,
