@@ -41,4 +41,25 @@ class SignUpResourceValidationTest {
 
         assertFalse(validator.validate(resource).isEmpty());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SecurePass123!", "Another$Valid1", "Twelve+Chars"})
+    void shouldAcceptPasswordsMeetingTheComplexityPolicy(String password) {
+        var resource = new SignUpResource("clinical.user", password, "ROLE_NURSE");
+
+        assertTrue(validator.validate(resource).isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "Short1!",           // fewer than 12 characters
+            "ThisPasswordIsWayTooLong1!", // more than 20 characters
+            "lowercase123!",     // no uppercase letter
+            "NoSpecialChar123",  // no special character
+    })
+    void shouldRejectPasswordsViolatingTheComplexityPolicy(String password) {
+        var resource = new SignUpResource("clinical.user", password, "ROLE_NURSE");
+
+        assertFalse(validator.validate(resource).isEmpty());
+    }
 }

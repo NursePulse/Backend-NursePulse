@@ -25,12 +25,16 @@ public record SignUpResource(
     String username,
 
     @NotBlank(message = "{validation.not-blank}")
-    @Size(min = 8, max = 72, message = "{validation.size}")
+    @Size(min = 12, max = 20, message = "{validation.size}")
+    @Pattern(
+        regexp = "^(?=.*[A-Z])(?=.*[^A-Za-z0-9\\s]).+$",
+        message = "{validation.password.complexity}"
+    )
     @Schema(
-        description = "User password (8 to 72 characters)",
+        description = "User password (12 to 20 characters, including at least one uppercase letter and one special character)",
         example = "SecurePass123!",
-        minLength = 8,
-        maxLength = 72
+        minLength = 12,
+        maxLength = 20
     )
     String password,
 
