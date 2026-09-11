@@ -130,6 +130,10 @@ public class WebSecurityConfiguration {
                                 "/swagger-resources/**",
                                 "/webjars/**").permitAll()
 
+                        // Staff directory: clinical roles can list registered users to pick a
+                        // recipient for a handover, but only ADMIN can manage accounts/roles.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users").hasAnyRole("NURSE", "DOCTOR", "ADMIN")
+
                         // IAM administration
                         .requestMatchers("/api/v1/users/**", "/api/v1/roles/**").hasRole("ADMIN")
 
