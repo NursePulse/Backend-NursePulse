@@ -34,9 +34,15 @@ public class HandoverCommandServicesImpl implements HandoverCommandService {
             return Result.failure(ApplicationError.notFound("Handover", "Handover not found with ID %d".formatted(command.handoverId())));
         }
         var handover = handoverOptional.get();
+        var createdAt = handover.getCreatedAt();
         handover.acknowledge(command.incomingNurseId(), command.additionalNotes());
         try {
             handover = handoverRepository.save(handover);
+            // createdAt is @CreatedDate/updatable=false on the persistence entity
+            // (no setter is exposed for it), so a merge-based update does not carry
+            // it back on the returned, reconstructed domain object. Restore it here
+            // so the acknowledge response still reports the real registration date.
+            handover.setCreatedAt(createdAt);
         } catch (Exception e) {
             return Result.failure(ApplicationError.unexpected("acknowledge-handover", e.getMessage()));
         }
