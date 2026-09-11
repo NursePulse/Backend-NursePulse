@@ -29,7 +29,7 @@ public class Role {
      * @return the name of the role as a string
      */
     public String getStringName() {
-        return name.name();
+        return name == null ? null : name.name();
     }
 
     /**

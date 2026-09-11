@@ -1,6 +1,7 @@
 package com.brainspark.nursepulse.platform.iam.infrastructure.persistence.jpa.entities;
 
 import com.brainspark.nursepulse.platform.iam.domain.model.valueobjects.Roles;
+import com.brainspark.nursepulse.platform.iam.infrastructure.persistence.jpa.converters.RolesAttributeConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ public class RolePersistenceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = RolesAttributeConverter.class)
     @Column(name = "name", nullable = false, unique = true, length = 20)
     private Roles name;
 }
