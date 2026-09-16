@@ -99,13 +99,13 @@ public class WebSecurityConfiguration {
         http.cors(configurer -> configurer.configurationSource(_ -> {
             var cors = new CorsConfiguration();
             cors.setAllowedOriginPatterns(List.of(
-                    "http://localhost:4200",
-                    "https://care-labs-nursepulse.netlify.app",
-                    "https://*.netlify.app",
-                    "https://front-nursepulse.vercel.app",
-                    "https://*.vercel.app",
-                    "https://backpulsereport-production-7576.up.railway.app"
-            ));
+                "http://localhost:*",
+                "https://care-labs-nursepulse.netlify.app",
+                "https://*.netlify.app",
+                "https://front-nursepulse.vercel.app",
+                "https://*.vercel.app",
+                "https://backpulsereport-production-7576.up.railway.app"
+                ));
             cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
             cors.setAllowedHeaders(List.of("*"));
             cors.setExposedHeaders(List.of("Location"));
