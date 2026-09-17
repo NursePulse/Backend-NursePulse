@@ -25,6 +25,21 @@ public class UserPersistenceEntity extends AuditableAbstractPersistenceEntity {
     @Column(name = "password", nullable = false, length = 120)
     private String password;
 
+    @Column(name = "first_name", length = 50)
+    private String firstName;
+
+    @Column(name = "last_name", length = 50)
+    private String lastName;
+
+    @Column(name = "phone", unique = true, length = 9)
+    private String phone;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "email", unique = true, length = 254)
+    private String email;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

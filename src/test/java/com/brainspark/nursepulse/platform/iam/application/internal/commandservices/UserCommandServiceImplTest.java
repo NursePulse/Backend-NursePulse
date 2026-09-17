@@ -74,6 +74,60 @@ class UserCommandServiceImplTest {
     }
 
     @Test
+    void shouldPersistProfileDataWithTheEncodedPassword() {
+        var persistedRole = new Role(1L, Roles.ROLE_NURSE);
+        var command = new SignUpCommand(
+                "nurse.maria",
+                "SecurePass123!",
+                "Maria",
+                "Lopez",
+                "999999999",
+                30,
+                "maria@example.com",
+                List.of(Role.getDefaultRole())
+        );
+        when(userRepository.existsByUsername("nurse.maria")).thenReturn(false);
+        when(userRepository.existsByEmail("maria@example.com")).thenReturn(false);
+        when(userRepository.existsByPhone("999999999")).thenReturn(false);
+        when(roleRepository.findByName(Roles.ROLE_NURSE)).thenReturn(Optional.of(persistedRole));
+        when(hashingService.encode("SecurePass123!")).thenReturn("encoded-password");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = service.handle(command);
+
+        var success = assertInstanceOf(Result.Success.class, result);
+        var createdUser = assertInstanceOf(User.class, success.value());
+        assertEquals("Maria", createdUser.getFirstName());
+        assertEquals("Lopez", createdUser.getLastName());
+        assertEquals("999999999", createdUser.getPhone());
+        assertEquals(30, createdUser.getAge());
+        assertEquals("maria@example.com", createdUser.getEmail());
+        assertEquals("encoded-password", createdUser.getPassword());
+    }
+
+    @Test
+    void shouldRejectDuplicatedEmailBeforeHashingPassword() {
+        when(userRepository.existsByUsername("nurse.maria")).thenReturn(false);
+        when(userRepository.existsByEmail("maria@example.com")).thenReturn(true);
+
+        var result = service.handle(new SignUpCommand(
+                "nurse.maria",
+                "SecurePass123!",
+                "Maria",
+                "Lopez",
+                "999999999",
+                30,
+                "maria@example.com",
+                List.of(Role.getDefaultRole())
+        ));
+
+        var failure = assertInstanceOf(Result.Failure.class, result);
+        var error = assertInstanceOf(ApplicationError.class, failure.error());
+        assertEquals("USER_CONFLICT", error.code());
+        verify(hashingService, org.mockito.Mockito.never()).encode(any());
+    }
+
+    @Test
     void shouldReturnGenericCredentialsErrorWhenUserDoesNotExist() {
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 

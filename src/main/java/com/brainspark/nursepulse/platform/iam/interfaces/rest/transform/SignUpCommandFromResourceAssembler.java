@@ -20,6 +20,11 @@ public class SignUpCommandFromResourceAssembler {
         return new SignUpCommand(
                 resource.username(),
                 resource.password(),
+            resource.firstName(),
+            resource.lastName(),
+            resource.phone(),
+            resource.age(),
+            resource.email(),
                 List.of(Role.toRoleFromName(resource.role()))
         );
     }

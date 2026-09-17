@@ -57,6 +57,12 @@ public class UserCommandServiceImpl implements UserCommandService {
         if (userRepository.existsByUsername(command.username())) {
             return Result.failure(ApplicationError.conflict("User", "Username already exists"));
         }
+        if (command.email() != null && userRepository.existsByEmail(command.email())) {
+            return Result.failure(ApplicationError.conflict("User", "Email already exists"));
+        }
+        if (command.phone() != null && userRepository.existsByPhone(command.phone())) {
+            return Result.failure(ApplicationError.conflict("User", "Phone already exists"));
+        }
         var requestedRoles = Role.validateRoleSet(command.roles());
         var roles = requestedRoles.stream()
                 .map(role -> roleRepository.findByName(role.getName()))
@@ -70,7 +76,16 @@ public class UserCommandServiceImpl implements UserCommandService {
                 .map(java.util.Optional::get)
                 .toList();
 
-        var user = new User(command.username(), hashingService.encode(command.password()), resolvedRoles);
+        var user = new User(
+            command.username(),
+            hashingService.encode(command.password()),
+            command.firstName(),
+            command.lastName(),
+            command.phone(),
+            command.age(),
+            command.email(),
+            resolvedRoles
+        );
         return Result.success(userRepository.save(user));
     }
 

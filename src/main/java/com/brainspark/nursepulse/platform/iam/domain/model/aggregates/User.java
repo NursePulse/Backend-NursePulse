@@ -22,6 +22,16 @@ public class User extends AbstractDomainAggregateRoot<User> {
     @Setter
     private String password;
     @Setter
+    private String firstName;
+    @Setter
+    private String lastName;
+    @Setter
+    private String phone;
+    @Setter
+    private Integer age;
+    @Setter
+    private String email;
+    @Setter
     private Set<Role> roles;
 
     public User() {
@@ -37,6 +47,16 @@ public class User extends AbstractDomainAggregateRoot<User> {
     public User(String username, String password, List<Role> roles) {
         this(username, password);
         addRoles(roles);
+    }
+
+    public User(String username, String password, String firstName, String lastName,
+                String phone, Integer age, String email, List<Role> roles) {
+        this(username, password, roles);
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone;
+        this.age = age;
+        this.email = email;
     }
 
     /**

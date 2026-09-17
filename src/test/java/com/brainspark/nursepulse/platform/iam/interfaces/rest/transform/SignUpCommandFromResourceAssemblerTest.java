@@ -13,12 +13,18 @@ class SignUpCommandFromResourceAssemblerTest {
         var resource = new SignUpResource(
                 " Doctor.Maria ",
                 "SecurePass123!",
+            "Maria",
+            "Lopez",
+            "999999999",
+            30,
+            "Maria@example.com",
                 "ROLE_DOCTOR"
         );
 
         var command = SignUpCommandFromResourceAssembler.toCommandFromResource(resource);
 
         assertEquals("doctor.maria", command.username());
+        assertEquals("maria@example.com", command.email());
         assertEquals(Roles.ROLE_DOCTOR, command.roles().getFirst().getName());
     }
 }

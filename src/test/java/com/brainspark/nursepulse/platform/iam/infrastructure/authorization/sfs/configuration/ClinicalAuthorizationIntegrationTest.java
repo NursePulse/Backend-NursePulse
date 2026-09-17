@@ -77,6 +77,22 @@ class ClinicalAuthorizationIntegrationTest {
         );
     }
 
+        @ParameterizedTest
+        @MethodSource("localAuthenticationPaths")
+        void shouldAllowAngularLocalhostPreflight(String path) throws Exception {
+                var response = mockMvc.perform(
+                                                request(HttpMethod.OPTIONS, path)
+                                                                .header(HttpHeaders.ORIGIN, "http://localhost:4200")
+                                                                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.POST.name())
+                                                                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, HttpHeaders.CONTENT_TYPE)
+                                )
+                                .andReturn()
+                                .getResponse();
+
+                assertNotEquals(403, response.getStatus());
+                assertEquals("http://localhost:4200", response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
+        }
+
     @ParameterizedTest
     @MethodSource("allowedClinicalRequests")
     void shouldAllowConfiguredClinicalRole(
@@ -134,4 +150,11 @@ class ClinicalAuthorizationIntegrationTest {
                 Arguments.of(HttpMethod.PATCH, "/api/v1/handovers/7/acknowledge", "ROLE_DOCTOR")
         );
     }
+
+        private static Stream<String> localAuthenticationPaths() {
+                return Stream.of(
+                                "/api/v1/authentication/sign-up",
+                                "/api/v1/authentication/sign-in"
+                );
+        }
 }
