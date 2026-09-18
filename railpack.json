@@ -1,0 +1,8 @@
+{
+    "$schema": "https://schema.railpack.com",
+    "provider": "java",
+    "packages": {
+        "java": "26",
+        "maven": "3.9"
+    }
+}
