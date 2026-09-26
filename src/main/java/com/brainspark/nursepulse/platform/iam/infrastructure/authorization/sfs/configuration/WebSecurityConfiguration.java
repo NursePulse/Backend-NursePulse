@@ -102,7 +102,6 @@ public class WebSecurityConfiguration {
                     "http://localhost:4200",
                     "https://care-labs-nursepulse.netlify.app",
                     "https://*.netlify.app",
-                    "https://front-nursepulse.vercel.app",
                     "https://*.vercel.app"
             ));
             cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
