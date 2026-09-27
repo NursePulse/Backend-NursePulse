@@ -26,8 +26,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @ActiveProfiles("test")
 class ClinicalAuthorizationIntegrationTest {
 
-    private static final String RAILWAY_SWAGGER_ORIGIN =
-            "https://backpulsereport-production-7576.up.railway.app";
+    private static final String FRONTEND_SWAGGER_ORIGIN =
+            "https://application-web-nurse-pulse.vercel.app";
 
     @Autowired
     private WebApplicationContext applicationContext;
@@ -58,10 +58,10 @@ class ClinicalAuthorizationIntegrationTest {
     }
 
     @Test
-    void shouldAllowSwaggerRequestsFromThePublicRailwayOrigin() throws Exception {
+    void shouldAllowSwaggerRequestsFromThePublicFrontendOrigin() throws Exception {
         var response = mockMvc.perform(
                         request(HttpMethod.OPTIONS, "/api/v1/authentication/sign-in")
-                                .header(HttpHeaders.ORIGIN, RAILWAY_SWAGGER_ORIGIN)
+                                .header(HttpHeaders.ORIGIN, FRONTEND_SWAGGER_ORIGIN)
                                 .header(
                                         HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD,
                                         HttpMethod.POST.name()
@@ -72,7 +72,7 @@ class ClinicalAuthorizationIntegrationTest {
 
         assertNotEquals(403, response.getStatus());
         assertEquals(
-                RAILWAY_SWAGGER_ORIGIN,
+                FRONTEND_SWAGGER_ORIGIN,
                 response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN)
         );
     }
