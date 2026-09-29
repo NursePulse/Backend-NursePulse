@@ -13,7 +13,12 @@ class SignUpCommandFromResourceAssemblerTest {
         var resource = new SignUpResource(
                 " Doctor.Maria ",
                 "SecurePass123!",
-                "ROLE_DOCTOR"
+                "ROLE_DOCTOR",
+                "Maria",
+                "Rodriguez",
+                "doctor.maria@example.com",
+                "987654321",
+                32
         );
 
         var command = SignUpCommandFromResourceAssembler.toCommandFromResource(resource);

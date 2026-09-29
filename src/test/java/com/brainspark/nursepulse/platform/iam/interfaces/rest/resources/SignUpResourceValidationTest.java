@@ -19,25 +19,30 @@ class SignUpResourceValidationTest {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
+    private static SignUpResource resourceWithRole(String username, String password, String role) {
+        return new SignUpResource(
+                username,
+                password,
+                role,
+                "Maria",
+                "Rodriguez",
+                "clinical.user@example.com",
+                "987654321",
+                32
+        );
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"ROLE_NURSE", "ROLE_DOCTOR"})
     void shouldAcceptPublicClinicalRoles(String role) {
-        var resource = new SignUpResource(
-                "clinical.user",
-                "SecurePass123!",
-                role
-        );
+        var resource = resourceWithRole("clinical.user", "SecurePass123!", role);
 
         assertTrue(validator.validate(resource).isEmpty());
     }
 
     @Test
     void shouldRejectAdminRoleDuringPublicRegistration() {
-        var resource = new SignUpResource(
-                "admin.user",
-                "SecurePass123!",
-                "ROLE_ADMIN"
-        );
+        var resource = resourceWithRole("admin.user", "SecurePass123!", "ROLE_ADMIN");
 
         assertFalse(validator.validate(resource).isEmpty());
     }
@@ -45,7 +50,7 @@ class SignUpResourceValidationTest {
     @ParameterizedTest
     @ValueSource(strings = {"SecurePass123!", "Another$Valid1", "Twelve+Chars"})
     void shouldAcceptPasswordsMeetingTheComplexityPolicy(String password) {
-        var resource = new SignUpResource("clinical.user", password, "ROLE_NURSE");
+        var resource = resourceWithRole("clinical.user", password, "ROLE_NURSE");
 
         assertTrue(validator.validate(resource).isEmpty());
     }
@@ -58,7 +63,7 @@ class SignUpResourceValidationTest {
             "NoSpecialChar123",  // no special character
     })
     void shouldRejectPasswordsViolatingTheComplexityPolicy(String password) {
-        var resource = new SignUpResource("clinical.user", password, "ROLE_NURSE");
+        var resource = resourceWithRole("clinical.user", password, "ROLE_NURSE");
 
         assertFalse(validator.validate(resource).isEmpty());
     }

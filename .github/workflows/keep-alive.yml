@@ -1,0 +1,14 @@
+name: Keep-alive (Render + Aiven MySQL)
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint (touches the DB)
+        run: |
+          curl -fsS https://backend-nursepulse-qfct.onrender.com/actuator/health
