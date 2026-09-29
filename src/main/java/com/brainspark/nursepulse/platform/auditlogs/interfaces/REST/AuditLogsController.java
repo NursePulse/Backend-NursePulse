@@ -1,6 +1,7 @@
 package com.brainspark.nursepulse.platform.auditlogs.interfaces.REST;
 
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.queries.GetEntityAuditHistoryQuery;
+import com.brainspark.nursepulse.platform.auditlogs.infrastructure.pdf.AuditLogPdfExportService;
 import com.brainspark.nursepulse.platform.auditlogs.domain.services.AuditLogCommandService;
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.queries.GetAuditLogsQuery;
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.queries.GetAuditLogByIdQuery;
@@ -25,6 +26,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +48,7 @@ public class AuditLogsController {
 
     private final AuditLogCommandService auditLogCommandService;
     private final AuditLogQueryService auditLogQueryService;
+    private final AuditLogPdfExportService auditLogPdfExportService;
 
     @PostMapping
     @Operation(
@@ -130,6 +134,55 @@ public class AuditLogsController {
                 resultPage -> PagedResult.from(resultPage, AuditLogResourceFromEntityAssembler::toResourceFromEntity),
                 HttpStatus.OK
         );
+    }
+
+    @GetMapping(value = "/export/pdf", produces = "application/pdf")
+    @Operation(
+            summary = "Export audit log entries as a PDF document",
+            description = "Renders the same filtered listing as the main audit log endpoint " +
+                    "(capped at 200 entries) as a downloadable PDF document."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "PDF document",
+                    content = @Content(mediaType = "application/pdf")),
+            @ApiResponse(responseCode = "500", description = "Unexpected server error",
+                    content = @Content)
+    })
+    public ResponseEntity<?> exportAuditLogsAsPdf(
+            @RequestParam(required = false) @Nullable Long patientId,
+            @RequestParam(required = false) @Nullable AuditedEntityType entityType,
+            @RequestParam(required = false) @Nullable String entityId,
+            @RequestParam(required = false) @Nullable AuditActionType actionType,
+            @RequestParam(required = false) @Nullable String performedBy,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant from,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant to
+    ) {
+        var query = new GetAuditLogsQuery(
+                patientId, entityType, entityId, actionType, performedBy, from, to, 0, 200
+        );
+        var result = auditLogQueryService.handle(query);
+        return switch (result) {
+            case com.brainspark.nursepulse.platform.shared.application.result.Result.Success<
+                    org.springframework.data.domain.Page<AuditLog>,
+                    com.brainspark.nursepulse.platform.shared.application.result.ApplicationError> success -> {
+                var pdfBytes = auditLogPdfExportService.render(success.value().getContent());
+                var headers = new HttpHeaders();
+                headers.setContentDisposition(
+                        ContentDisposition.attachment().filename("auditoria-nursepulse.pdf").build()
+                );
+                yield ResponseEntity.ok()
+                        .headers(headers)
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .body(pdfBytes);
+            }
+            case com.brainspark.nursepulse.platform.shared.application.result.Result.Failure<
+                    org.springframework.data.domain.Page<AuditLog>,
+                    com.brainspark.nursepulse.platform.shared.application.result.ApplicationError> failure ->
+                    com.brainspark.nursepulse.platform.shared.interfaces.rest.transform.ErrorResponseAssembler
+                            .toErrorResponseFromApplicationError(failure.error());
+        };
     }
 
     @GetMapping("/{auditLogId}")
