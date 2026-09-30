@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +54,7 @@ public class HandoversController {
             ),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    public ResponseEntity<?> createHandover(@RequestBody CreateHandoverResource resource, Authentication authentication) {
+    public ResponseEntity<?> createHandover(@RequestBody @Valid CreateHandoverResource resource, Authentication authentication) {
         var createHandoverCommand = CreateHandoverCommandFromResourceAssembler.toCommandFromResource(resource, authentication.getName());
         var result = handoverCommandService.handle(createHandoverCommand);
 

@@ -1,6 +1,9 @@
 package com.brainspark.nursepulse.platform.handover.interfaces.rest.resources;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 
 @Schema(
@@ -14,12 +17,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
                 "\"targetNurseId\": 2}"
 )
 public record CreateHandoverResource(
+        @NotNull(message = "{validation.not-blank}")
         @Schema(
                 description = "Patient ID associated with the handover",
                 example = "1"
         )
         Long patientId,
 
+        @NotBlank(message = "{validation.not-blank}")
+        @Size(max = 255, message = "{validation.size}")
         @Schema(
                 description = "Handover title",
                 example = "Night Shift Handover",
@@ -28,6 +34,8 @@ public record CreateHandoverResource(
         )
         String title,
 
+        @NotBlank(message = "{validation.not-blank}")
+        @Size(max = 1000, message = "{validation.size}")
         @Schema(
                 description = "SBAR - Situation",
                 example = "Patient stable, mild chest discomfort",
@@ -36,6 +44,8 @@ public record CreateHandoverResource(
         )
         String situation,
 
+        @NotBlank(message = "{validation.not-blank}")
+        @Size(max = 1000, message = "{validation.size}")
         @Schema(
                 description = "SBAR - Background",
                 example = "Admitted for unstable angina, day 2",
@@ -44,6 +54,8 @@ public record CreateHandoverResource(
         )
         String background,
 
+        @NotBlank(message = "{validation.not-blank}")
+        @Size(max = 1000, message = "{validation.size}")
         @Schema(
                 description = "SBAR - Assessment",
                 example = "Vitals within range, pain controlled",
@@ -52,6 +64,8 @@ public record CreateHandoverResource(
         )
         String assessment,
 
+        @NotBlank(message = "{validation.not-blank}")
+        @Size(max = 1000, message = "{validation.size}")
         @Schema(
                 description = "SBAR - Recommendation",
                 example = "Continue monitoring, next troponin at 06:00",

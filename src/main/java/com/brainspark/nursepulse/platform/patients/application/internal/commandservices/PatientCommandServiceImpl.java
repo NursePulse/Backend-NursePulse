@@ -11,8 +11,12 @@ import com.brainspark.nursepulse.platform.shared.application.result.ApplicationE
 import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class PatientCommandServiceImpl implements PatientCommandService {
+
+    private static final LocalDate MIN_BIRTH_DATE = LocalDate.of(1930, 1, 1);
 
     private final PatientRepository patientRepository;
 
@@ -23,6 +27,13 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Override
     public Result<Patient, ApplicationError> handle(CreatePatientCommand command) {
         try {
+            if (command.birthDate().isBefore(MIN_BIRTH_DATE)) {
+                return Result.failure(ApplicationError.businessRuleViolation(
+                        "create patient",
+                        "Birth date must not be earlier than 1930-01-01"
+                ));
+            }
+
             if (patientRepository.existsByDocumentNumber(command.documentNumber())) {
                 throw new PatientAlreadyExistsException(command.documentNumber());
             }
@@ -47,6 +58,13 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Override
     public Result<Patient, ApplicationError> handle(UpdatePatientCommand command) {
         try {
+            if (command.birthDate().isBefore(MIN_BIRTH_DATE)) {
+                return Result.failure(ApplicationError.businessRuleViolation(
+                        "update patient",
+                        "Birth date must not be earlier than 1930-01-01"
+                ));
+            }
+
             var patientOptional = patientRepository.findById(command.patientId());
 
             if (patientOptional.isEmpty()) {
