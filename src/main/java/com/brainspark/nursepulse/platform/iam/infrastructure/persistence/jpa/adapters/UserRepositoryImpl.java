@@ -46,4 +46,14 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean existsByUsername(String username) {
         return userPersistenceRepository.existsByUsername(username);
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userPersistenceRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsByPhone(String phone) {
+        return userPersistenceRepository.existsByPhone(phone);
+    }
 }

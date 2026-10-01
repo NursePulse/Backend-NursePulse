@@ -18,4 +18,8 @@ public interface UserRepository {
     User save(User user);
 
     boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByPhone(String phone);
 }

@@ -10,6 +10,7 @@ import com.brainspark.nursepulse.platform.iam.domain.model.commands.UpdateUserRo
 import com.brainspark.nursepulse.platform.iam.domain.model.entities.Role;
 import com.brainspark.nursepulse.platform.iam.domain.repositories.RoleRepository;
 import com.brainspark.nursepulse.platform.iam.domain.repositories.UserRepository;
+import com.brainspark.nursepulse.platform.shared.application.notifications.EmailNotificationService;
 import com.brainspark.nursepulse.platform.shared.application.result.ApplicationError;
 import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -26,16 +27,19 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final HashingService hashingService;
     private final TokenService tokenService;
     private final RoleRepository roleRepository;
+    private final EmailNotificationService emailNotificationService;
 
     public UserCommandServiceImpl(
             UserRepository userRepository,
             HashingService hashingService,
             TokenService tokenService,
-            RoleRepository roleRepository) {
+            RoleRepository roleRepository,
+            EmailNotificationService emailNotificationService) {
         this.userRepository = userRepository;
         this.hashingService = hashingService;
         this.tokenService = tokenService;
         this.roleRepository = roleRepository;
+        this.emailNotificationService = emailNotificationService;
     }
 
     @Override
@@ -56,6 +60,12 @@ public class UserCommandServiceImpl implements UserCommandService {
     public Result<User, ApplicationError> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username())) {
             return Result.failure(ApplicationError.conflict("User", "Username already exists"));
+        }
+        if (command.email() != null && userRepository.existsByEmail(command.email())) {
+            return Result.failure(ApplicationError.conflict("User", "Email already exists"));
+        }
+        if (command.phone() != null && userRepository.existsByPhone(command.phone())) {
+            return Result.failure(ApplicationError.conflict("User", "Phone already exists"));
         }
         var requestedRoles = Role.validateRoleSet(command.roles());
         var roles = requestedRoles.stream()
@@ -80,7 +90,9 @@ public class UserCommandServiceImpl implements UserCommandService {
                 command.age(),
                 resolvedRoles
         );
-        return Result.success(userRepository.save(user));
+        var savedUser = userRepository.save(user);
+        emailNotificationService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName());
+        return Result.success(savedUser);
     }
 
     @Override
