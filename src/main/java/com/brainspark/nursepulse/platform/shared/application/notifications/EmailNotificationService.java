@@ -1,5 +1,5 @@
 package com.brainspark.nursepulse.platform.shared.application.notifications;
 
 public interface EmailNotificationService {
-    void sendWelcomeEmail(String toEmail, String firstName);
+    void sendVerificationEmail(String toEmail, String firstName, String verificationLink);
 }

@@ -1,6 +1,8 @@
 package com.brainspark.nursepulse.platform.iam.interfaces.rest;
 
 import com.brainspark.nursepulse.platform.iam.application.commandservices.UserCommandService;
+import com.brainspark.nursepulse.platform.iam.domain.model.aggregates.User;
+import com.brainspark.nursepulse.platform.iam.domain.model.commands.VerifyEmailCommand;
 import com.brainspark.nursepulse.platform.iam.interfaces.rest.resources.AuthenticatedUserResource;
 import com.brainspark.nursepulse.platform.iam.interfaces.rest.resources.SignInResource;
 import com.brainspark.nursepulse.platform.iam.interfaces.rest.resources.SignUpResource;
@@ -9,6 +11,8 @@ import com.brainspark.nursepulse.platform.iam.interfaces.rest.transform.Authenti
 import com.brainspark.nursepulse.platform.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
 import com.brainspark.nursepulse.platform.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
 import com.brainspark.nursepulse.platform.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
+import com.brainspark.nursepulse.platform.shared.application.result.ApplicationError;
+import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import com.brainspark.nursepulse.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,12 +22,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -43,9 +50,14 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirements
 public class AuthenticationController {
     private final UserCommandService userCommandService;
+    private final String frontendUrl;
 
-    public AuthenticationController(UserCommandService userCommandService) {
+    public AuthenticationController(
+            UserCommandService userCommandService,
+            @Value("${app.frontend-url:http://localhost:4200}") String frontendUrl
+    ) {
         this.userCommandService = userCommandService;
+        this.frontendUrl = frontendUrl;
     }
 
     /**
@@ -123,5 +135,61 @@ public class AuthenticationController {
                 HttpStatus.CREATED
         );
 
+    }
+
+    /**
+     * Handles the email verification link sent at sign-up.
+     * Renders a plain HTML confirmation page, since this endpoint is opened
+     * directly from the user's email client, not called by the frontend app.
+     *
+     * @param token the verification token issued at sign-up.
+     * @return an HTML page confirming success or explaining the failure.
+     */
+    @GetMapping(value = "/verify-email", produces = MediaType.TEXT_HTML_VALUE)
+    @Operation(
+        summary = "Confirm account email",
+        description = "Marks the account's email as verified using the token sent by email at sign-up."
+    )
+    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+        var result = userCommandService.handle(new VerifyEmailCommand(token));
+        return switch (result) {
+            case Result.Success<User, ApplicationError> ignored -> ResponseEntity.ok(renderVerificationPage(
+                    "Cuenta verificada",
+                    "Tu correo fue confirmado con exito. Ya puedes iniciar sesion en NursePulse.",
+                    true
+            ));
+            case Result.Failure<User, ApplicationError> failure -> ResponseEntity.badRequest().body(renderVerificationPage(
+                    "No se pudo verificar tu cuenta",
+                    failure.error().details() != null ? failure.error().details() : failure.error().message(),
+                    false
+            ));
+        };
+    }
+
+    private String renderVerificationPage(String title, String message, boolean success) {
+        var accentColor = success ? "#0f9d58" : "#d93025";
+        return """
+                <!doctype html>
+                <html lang="es">
+                <head>
+                  <meta charset="utf-8" />
+                  <title>%s · NursePulse</title>
+                  <style>
+                    body { font-family: -apple-system, Arial, sans-serif; background: #f5f7fb; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                    .card { background: #fff; border-radius: 12px; padding: 40px; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+                    h1 { color: %s; font-size: 22px; margin-bottom: 12px; }
+                    p { color: #333; line-height: 1.5; }
+                    a.button { display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #0052cc; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+                  </style>
+                </head>
+                <body>
+                  <div class="card">
+                    <h1>%s</h1>
+                    <p>%s</p>
+                    <a class="button" href="%s/sign-in">Ir a iniciar sesion</a>
+                  </div>
+                </body>
+                </html>
+                """.formatted(title, accentColor, title, message, frontendUrl);
     }
 }

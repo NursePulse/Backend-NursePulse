@@ -4,6 +4,7 @@ import com.brainspark.nursepulse.platform.iam.domain.model.aggregates.User;
 import com.brainspark.nursepulse.platform.iam.domain.model.commands.SignInCommand;
 import com.brainspark.nursepulse.platform.iam.domain.model.commands.SignUpCommand;
 import com.brainspark.nursepulse.platform.iam.domain.model.commands.UpdateUserRolesCommand;
+import com.brainspark.nursepulse.platform.iam.domain.model.commands.VerifyEmailCommand;
 import com.brainspark.nursepulse.platform.shared.application.result.ApplicationError;
 import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -35,5 +36,13 @@ public interface UserCommandService {
      * @return updated user aggregate, or an application error
      */
     Result<User, ApplicationError> handle(UpdateUserRolesCommand command);
+
+    /**
+     * Handles email verification using the token sent at sign-up.
+     *
+     * @param command verify email command
+     * @return the verified user aggregate, or an application error
+     */
+    Result<User, ApplicationError> handle(VerifyEmailCommand command);
 
 }

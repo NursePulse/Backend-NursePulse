@@ -13,6 +13,8 @@ public interface UserRepository {
 
     Optional<User> findByUsername(String username);
 
+    Optional<User> findByVerificationToken(String verificationToken);
+
     List<User> findAll();
 
     User save(User user);

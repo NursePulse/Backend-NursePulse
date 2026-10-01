@@ -33,6 +33,12 @@ public class User extends AbstractDomainAggregateRoot<User> {
     private Integer age;
     @Setter
     private Set<Role> roles;
+    @Setter
+    private boolean emailVerified = true;
+    @Setter
+    private String verificationToken;
+    @Setter
+    private java.time.Instant verificationTokenExpiresAt;
 
     public User() {
         this.roles = new HashSet<>();

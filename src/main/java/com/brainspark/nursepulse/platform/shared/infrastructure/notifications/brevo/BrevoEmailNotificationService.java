@@ -30,33 +30,40 @@ public class BrevoEmailNotificationService implements EmailNotificationService {
     }
 
     @Override
-    public void sendWelcomeEmail(String toEmail, String firstName) {
+    public void sendVerificationEmail(String toEmail, String firstName, String verificationLink) {
         if (toEmail == null || toEmail.isBlank()) {
-            log.info("No recipient email provided, skipping welcome email");
+            log.info("No recipient email provided, skipping verification email");
             return;
         }
 
         if (senderEmail == null || senderEmail.isBlank()) {
-            log.warn("Brevo sender email is not configured, skipping welcome email to {}", toEmail);
+            log.warn("Brevo sender email is not configured, skipping verification email to {}", toEmail);
             return;
         }
 
         try {
             var name = firstName != null ? firstName : "";
+            var htmlContent = "<p>Hola " + name + ", tu cuenta en NursePulse fue creada con exito.</p>"
+                    + "<p>Para activarla, confirma tu correo haciendo clic en el siguiente boton:</p>"
+                    + "<p><a href=\"" + verificationLink + "\" "
+                    + "style=\"display:inline-block;padding:12px 24px;background-color:#0052cc;color:#ffffff;"
+                    + "text-decoration:none;border-radius:6px;font-weight:bold;\">Verificar mi cuenta</a></p>"
+                    + "<p>Si el boton no funciona, copia y pega este enlace en tu navegador:<br>" + verificationLink + "</p>";
+
             restClient.post()
                     .uri("/smtp/email")
                     .body(Map.of(
                             "sender", Map.of("email", senderEmail, "name", "NursePulse"),
                             "to", java.util.List.of(Map.of("email", toEmail, "name", name)),
-                            "subject", "Bienvenido a NursePulse",
-                            "htmlContent", "<p>Hola " + name + ", tu cuenta en NursePulse fue creada con exito.</p>"
+                            "subject", "Confirma tu cuenta en NursePulse",
+                            "htmlContent", htmlContent
                     ))
                     .retrieve()
                     .toBodilessEntity();
-            log.info("Welcome email sent successfully via Brevo to {}", toEmail);
+            log.info("Verification email sent successfully via Brevo to {}", toEmail);
         } catch (RuntimeException exception) {
             // No bloquear el sign-up si Brevo falla — solo loguear.
-            log.warn("Failed to send welcome email via Brevo to {}: {}", toEmail, exception.getMessage());
+            log.warn("Failed to send verification email via Brevo to {}: {}", toEmail, exception.getMessage());
         }
     }
 }

@@ -20,6 +20,13 @@ public interface UserPersistenceRepository extends JpaRepository<UserPersistence
     Optional<UserPersistenceEntity> findByUsername(String username);
 
     /**
+     * This method is responsible for finding the user by their email verification token.
+     * @param verificationToken The verification token.
+     * @return The user object.
+     */
+    Optional<UserPersistenceEntity> findByVerificationToken(String verificationToken);
+
+    /**
      * This method is responsible for checking if the user exists by username.
      * @param username The username.
      * @return True if the user exists, false otherwise.

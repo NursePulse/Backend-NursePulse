@@ -40,6 +40,15 @@ public class UserPersistenceEntity extends AuditableAbstractPersistenceEntity {
     @Column(name = "age")
     private Integer age;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = true;
+
+    @Column(name = "verification_token", length = 64, unique = true)
+    private String verificationToken;
+
+    @Column(name = "verification_token_expires_at")
+    private java.time.Instant verificationTokenExpiresAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

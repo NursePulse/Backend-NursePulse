@@ -7,6 +7,7 @@ import com.brainspark.nursepulse.platform.iam.domain.model.aggregates.User;
 import com.brainspark.nursepulse.platform.iam.domain.model.commands.SignInCommand;
 import com.brainspark.nursepulse.platform.iam.domain.model.commands.SignUpCommand;
 import com.brainspark.nursepulse.platform.iam.domain.model.commands.UpdateUserRolesCommand;
+import com.brainspark.nursepulse.platform.iam.domain.model.commands.VerifyEmailCommand;
 import com.brainspark.nursepulse.platform.iam.domain.model.entities.Role;
 import com.brainspark.nursepulse.platform.iam.domain.repositories.RoleRepository;
 import com.brainspark.nursepulse.platform.iam.domain.repositories.UserRepository;
@@ -14,8 +15,13 @@ import com.brainspark.nursepulse.platform.shared.application.notifications.Email
 import com.brainspark.nursepulse.platform.shared.application.result.ApplicationError;
 import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 /**
  * User command service implementation.
@@ -28,18 +34,21 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final TokenService tokenService;
     private final RoleRepository roleRepository;
     private final EmailNotificationService emailNotificationService;
+    private final String publicUrl;
 
     public UserCommandServiceImpl(
             UserRepository userRepository,
             HashingService hashingService,
             TokenService tokenService,
             RoleRepository roleRepository,
-            EmailNotificationService emailNotificationService) {
+            EmailNotificationService emailNotificationService,
+            @Value("${app.public-url:http://localhost:8080}") String publicUrl) {
         this.userRepository = userRepository;
         this.hashingService = hashingService;
         this.tokenService = tokenService;
         this.roleRepository = roleRepository;
         this.emailNotificationService = emailNotificationService;
+        this.publicUrl = publicUrl;
     }
 
     @Override
@@ -50,6 +59,12 @@ public class UserCommandServiceImpl implements UserCommandService {
         }
         if (!hashingService.matches(command.password(), user.get().getPassword())) {
             return invalidCredentials();
+        }
+        if (!user.get().isEmailVerified()) {
+            return Result.failure(ApplicationError.businessRuleViolation(
+                    "sign in",
+                    "Email not verified. Check your inbox for the confirmation link."
+            ));
         }
         var token = tokenService.generateToken(user.get().getUsername());
         return Result.success(ImmutablePair.of(user.get(), token));
@@ -90,8 +105,20 @@ public class UserCommandServiceImpl implements UserCommandService {
                 command.age(),
                 resolvedRoles
         );
+
+        if (command.email() != null && !command.email().isBlank()) {
+            user.setEmailVerified(false);
+            user.setVerificationToken(UUID.randomUUID().toString());
+            user.setVerificationTokenExpiresAt(Instant.now().plus(24, ChronoUnit.HOURS));
+        }
+
         var savedUser = userRepository.save(user);
-        emailNotificationService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName());
+
+        if (!savedUser.isEmailVerified()) {
+            var verificationLink = publicUrl + "/api/v1/authentication/verify-email?token=" + savedUser.getVerificationToken();
+            emailNotificationService.sendVerificationEmail(savedUser.getEmail(), savedUser.getFirstName(), verificationLink);
+        }
+
         return Result.success(savedUser);
     }
 
@@ -125,6 +152,28 @@ public class UserCommandServiceImpl implements UserCommandService {
         var targetUser = user.get();
         targetUser.setRoles(new java.util.HashSet<>(resolvedRoles));
         return Result.success(userRepository.save(targetUser));
+    }
+
+    @Override
+    @Transactional
+    public Result<User, ApplicationError> handle(VerifyEmailCommand command) {
+        var userOptional = userRepository.findByVerificationToken(command.token());
+        if (userOptional.isEmpty()) {
+            return Result.failure(ApplicationError.notFound("VerificationToken", command.token()));
+        }
+
+        var user = userOptional.get();
+        if (user.getVerificationTokenExpiresAt() == null || user.getVerificationTokenExpiresAt().isBefore(Instant.now())) {
+            return Result.failure(ApplicationError.businessRuleViolation(
+                    "verify email",
+                    "Verification link has expired"
+            ));
+        }
+
+        user.setEmailVerified(true);
+        user.setVerificationToken(null);
+        user.setVerificationTokenExpiresAt(null);
+        return Result.success(userRepository.save(user));
     }
 
     private Result<ImmutablePair<User, String>, ApplicationError> invalidCredentials() {
