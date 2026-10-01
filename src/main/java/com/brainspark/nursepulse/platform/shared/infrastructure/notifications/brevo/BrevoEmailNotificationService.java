@@ -49,7 +49,7 @@ public class BrevoEmailNotificationService implements EmailNotificationService {
                             "sender", Map.of("email", senderEmail, "name", "NursePulse"),
                             "to", java.util.List.of(Map.of("email", toEmail, "name", name)),
                             "subject", "Bienvenido a NursePulse",
-                            "htmlContent", "<p>Papi Jose estuvo aca</p>"
+                            "htmlContent", "<p>Hola " + name + ", tu cuenta en NursePulse fue creada con exito.</p>"
                     ))
                     .retrieve()
                     .toBodilessEntity();
