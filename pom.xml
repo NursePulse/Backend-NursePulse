@@ -19,7 +19,7 @@
     <description>NursePulse Platform is a RESTful API built with Java, Spring Boot and MySQL to support clinical processes such as patient management, vital signs registration, SBAR handovers, clinical events, alerts and audit logs.</description>
 
     <properties>
-        <java.version>26</java.version>
+        <java.version>21</java.version>
     </properties>
 
     <dependencies>

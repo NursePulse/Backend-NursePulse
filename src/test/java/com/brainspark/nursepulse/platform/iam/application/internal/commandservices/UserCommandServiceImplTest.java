@@ -9,6 +9,7 @@ import com.brainspark.nursepulse.platform.iam.domain.model.entities.Role;
 import com.brainspark.nursepulse.platform.iam.domain.model.valueobjects.Roles;
 import com.brainspark.nursepulse.platform.iam.domain.repositories.RoleRepository;
 import com.brainspark.nursepulse.platform.iam.domain.repositories.UserRepository;
+import com.brainspark.nursepulse.platform.shared.application.notifications.EmailNotificationService;
 import com.brainspark.nursepulse.platform.shared.application.result.ApplicationError;
 import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +31,7 @@ class UserCommandServiceImplTest {
     private HashingService hashingService;
     private TokenService tokenService;
     private RoleRepository roleRepository;
+    private EmailNotificationService emailNotificationService;
     private UserCommandServiceImpl service;
 
     @BeforeEach
@@ -37,11 +40,13 @@ class UserCommandServiceImplTest {
         hashingService = mock(HashingService.class);
         tokenService = mock(TokenService.class);
         roleRepository = mock(RoleRepository.class);
+        emailNotificationService = mock(EmailNotificationService.class);
         service = new UserCommandServiceImpl(
                 userRepository,
                 hashingService,
                 tokenService,
-                roleRepository
+                roleRepository,
+                emailNotificationService
         );
     }
 
@@ -103,6 +108,7 @@ class UserCommandServiceImplTest {
         assertEquals(30, createdUser.getAge());
         assertEquals("maria@example.com", createdUser.getEmail());
         assertEquals("encoded-password", createdUser.getPassword());
+        verify(emailNotificationService).sendWelcomeEmail("maria@example.com", "Maria");
     }
 
     @Test
@@ -124,7 +130,8 @@ class UserCommandServiceImplTest {
         var failure = assertInstanceOf(Result.Failure.class, result);
         var error = assertInstanceOf(ApplicationError.class, failure.error());
         assertEquals("USER_CONFLICT", error.code());
-        verify(hashingService, org.mockito.Mockito.never()).encode(any());
+        verify(hashingService, never()).encode(any());
+        verify(emailNotificationService, never()).sendWelcomeEmail(any(), any());
     }
 
     @Test
