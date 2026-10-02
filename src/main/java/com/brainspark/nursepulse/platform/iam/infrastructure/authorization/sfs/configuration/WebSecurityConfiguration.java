@@ -127,7 +127,8 @@ public class WebSecurityConfiguration {
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
-                                "/actuator/health").permitAll()
+                                "/actuator/health",
+                                "/actuator/prometheus").permitAll()
 
                         // Staff directory: clinical roles can list registered users to pick a
                         // recipient for a handover, but only ADMIN can manage accounts/roles.
