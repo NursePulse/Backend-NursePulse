@@ -1,6 +1,7 @@
 package com.brainspark.nursepulse.platform.auditlogs.interfaces.REST;
 
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.queries.GetEntityAuditHistoryQuery;
+import com.brainspark.nursepulse.platform.auditlogs.domain.model.commands.CreateAuditLogCommand;
 import com.brainspark.nursepulse.platform.auditlogs.infrastructure.pdf.AuditLogPdfExportService;
 import com.brainspark.nursepulse.platform.auditlogs.domain.services.AuditLogCommandService;
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.queries.GetAuditLogsQuery;
@@ -10,6 +11,8 @@ import com.brainspark.nursepulse.platform.auditlogs.domain.model.valueobjects.Au
 import com.brainspark.nursepulse.platform.auditlogs.interfaces.REST.resources.*;
 import com.brainspark.nursepulse.platform.auditlogs.interfaces.REST.transform.*;
 import com.brainspark.nursepulse.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
+import com.brainspark.nursepulse.platform.shared.application.result.ApplicationError;
+import com.brainspark.nursepulse.platform.shared.application.result.Result;
 import com.brainspark.nursepulse.platform.auditlogs.application.queryservices.AuditLogQueryService;
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.aggregates.AuditLog;
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.queries.GetPatientAuditTimelineQuery;
@@ -24,6 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
@@ -36,6 +40,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST controller for the auditlogs bounded context.
@@ -43,6 +48,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/audit-logs", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Audit Logs", description = "Clinical traceability endpoints (append-only audit trail)")
 public class AuditLogsController {
 
@@ -157,7 +163,8 @@ public class AuditLogsController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant from,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant to
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant to,
+            Authentication authentication
     ) {
         var query = new GetAuditLogsQuery(
                 patientId, entityType, entityId, actionType, performedBy, from, to, 0, 200
@@ -167,7 +174,9 @@ public class AuditLogsController {
             case com.brainspark.nursepulse.platform.shared.application.result.Result.Success<
                     org.springframework.data.domain.Page<AuditLog>,
                     com.brainspark.nursepulse.platform.shared.application.result.ApplicationError> success -> {
-                var pdfBytes = auditLogPdfExportService.render(success.value().getContent());
+                var entries = success.value().getContent();
+                var pdfBytes = auditLogPdfExportService.render(entries);
+                recordPdfExport(authentication.getName(), entries.size());
                 var headers = new HttpHeaders();
                 headers.setContentDisposition(
                         ContentDisposition.attachment().filename("auditoria-nursepulse.pdf").build()
@@ -183,6 +192,27 @@ public class AuditLogsController {
                     com.brainspark.nursepulse.platform.shared.interfaces.rest.transform.ErrorResponseAssembler
                             .toErrorResponseFromApplicationError(failure.error());
         };
+    }
+
+    /**
+     * Leaves an audit trail of who exported the audit log and when. A failure to persist
+     * the entry is logged but does not block the download the user already requested.
+     */
+    private void recordPdfExport(String actor, int exportedEntries) {
+        var metadata = "{\"description\":\"Exportó el registro de auditoría a PDF\","
+                + "\"source\":\"backend\",\"entries\":" + exportedEntries + "}";
+        var command = new CreateAuditLogCommand(
+                null,
+                AuditedEntityType.AUDIT_LOG,
+                UUID.randomUUID().toString(),
+                AuditActionType.VIEW,
+                actor,
+                null,
+                metadata
+        );
+        if (auditLogCommandService.handle(command) instanceof Result.Failure<AuditLog, ApplicationError> failure) {
+            log.error("Could not record audit log PDF export by {}: {}", actor, failure.error());
+        }
     }
 
     @GetMapping("/{auditLogId}")
