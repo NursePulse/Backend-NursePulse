@@ -87,7 +87,7 @@ public class AuditLogPdfExportService {
     }
 
     private String describe(AuditLog entry) {
-        var metadata = entry.getMetadata().getValue();
+        var metadata = entry.getMetadata() != null ? entry.getMetadata().getValue() : null;
         if (metadata != null) {
             try {
                 JsonNode node = OBJECT_MAPPER.readTree(metadata);
