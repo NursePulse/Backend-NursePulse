@@ -5,6 +5,7 @@ import com.brainspark.nursepulse.platform.auditlogs.domain.model.commands.Create
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.valueobjects.AuditActionType;
 import com.brainspark.nursepulse.platform.auditlogs.domain.model.valueobjects.AuditedEntityType;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -38,6 +39,18 @@ class AuditLogPdfExportServiceTest {
         var pdfBytes = service.render(List.of(withMetadataDescription, withoutMetadata));
 
         assertTrue(pdfBytes.length > 0);
+        assertTrue(pdfBytes[0] == '%' && pdfBytes[1] == 'P' && pdfBytes[2] == 'D' && pdfBytes[3] == 'F');
+    }
+
+    @Test
+    void shouldRenderEntriesLoadedWithoutMetadata() {
+        // Rows stored with all metadata columns null come back from JPA with a null embedded object.
+        var entry = AuditLog.create(new CreateAuditLogCommand(
+                null, AuditedEntityType.PATIENT, "patient-1", AuditActionType.CREATE, "nurse.maria", null, null));
+        ReflectionTestUtils.setField(entry, "metadata", null);
+
+        var pdfBytes = service.render(List.of(entry));
+
         assertTrue(pdfBytes[0] == '%' && pdfBytes[1] == 'P' && pdfBytes[2] == 'D' && pdfBytes[3] == 'F');
     }
 

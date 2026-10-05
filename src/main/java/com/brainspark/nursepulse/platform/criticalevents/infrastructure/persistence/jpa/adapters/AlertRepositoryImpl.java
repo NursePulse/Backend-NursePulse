@@ -23,7 +23,11 @@ public class AlertRepositoryImpl implements AlertRepository {
         var entity = AlertPersistenceAssembler.toPersistenceFromDomain(alert);
         var savedEntity = alertPersistenceRepository.save(entity);
 
-        return AlertPersistenceAssembler.toDomainFromPersistence(savedEntity);
+        // The domain alert is rebuilt without createdAt, so merging an existing row returns it as null.
+        // Re-reading keeps the value stored in the database (triggeredAt) in the response.
+        var storedEntity = alertPersistenceRepository.findById(savedEntity.getId()).orElse(savedEntity);
+
+        return AlertPersistenceAssembler.toDomainFromPersistence(storedEntity);
     }
 
     @Override
